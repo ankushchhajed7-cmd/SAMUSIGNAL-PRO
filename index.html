@@ -15,7 +15,7 @@
 <style>
 :root{
   --bg:#0d0d0d; --panel:#141414; --panel2:#0d0d0d; --line:#2a2a2a;
-  --txt:#f0f0f0; --mut:#9aa4b0; --dim:#7d8794;
+  --txt:#f5f5f5; --mut:#c6d2de; --dim:#a9b6c4;
   --lbl:#8fd4ff;
   --up:#00FF96; --dn:#FF4444; --gold:#FFB800; --blue:#00CCFF;
   --r:8px;
@@ -42,12 +42,12 @@ header{
 .hbox{max-width:600px;margin:0 auto;text-align:center;padding:9px 10px;
   background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
 .hbox h1{margin:0 0 2px;font-size:16px;color:var(--gold);letter-spacing:2.5px;font-weight:700}
-.hbox p{margin:0;font-size:8.5px;color:var(--lbl);letter-spacing:1.2px;white-space:nowrap}
+.hbox p{margin:0;font-size:10px;font-weight:700;color:var(--lbl);letter-spacing:1.2px;white-space:nowrap}
 .hrow{display:flex;gap:5px;margin-top:8px;justify-content:center;align-items:center}
 .ib{padding:5px 8px;background:var(--bg);border:1px solid var(--line);border-radius:5px;
-  color:var(--lbl);font-size:9px;font-weight:700;letter-spacing:.5px;white-space:nowrap;line-height:1.4}
+  color:var(--lbl);font-size:10.5px;font-weight:700;letter-spacing:.5px;white-space:nowrap;line-height:1.4}
 .ib:active{border-color:var(--gold);color:var(--gold)}
-.clock{padding:4px 7px;font-size:8.5px;color:var(--mut);line-height:1.3;text-align:left;white-space:nowrap}
+.clock{padding:4px 7px;font-size:10px;font-weight:700;color:var(--mut);line-height:1.35;text-align:left;white-space:nowrap}
 .clock b{display:block;color:var(--gold);font-size:11px;letter-spacing:.5px}
 
 /* ---------- ticker ---------- */
@@ -65,7 +65,7 @@ main{padding:0 12px 20px;max-width:600px;margin:0 auto}
   margin:0 0 12px;font-weight:700;display:flex;align-items:center;gap:8px}
 .ttl .sp{margin-left:auto;font-weight:700;letter-spacing:0;text-transform:none;
   color:var(--lbl);font-size:10px;opacity:.85}
-label{display:block;font-size:10px;color:var(--lbl);letter-spacing:1px;margin-bottom:5px;
+label{display:block;font-size:11.5px;font-weight:700;color:var(--lbl);letter-spacing:1px;margin-bottom:6px;
   font-weight:700;text-transform:uppercase;text-shadow:0 0 8px rgba(143,212,255,.35)}
 input,select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;
   padding:10px 11px;color:var(--txt);outline:none}
@@ -96,14 +96,14 @@ input:focus,select:focus{border-color:var(--gold)}
 .pick.lock{color:var(--dim)}
 
 .plist{max-height:58vh;overflow-y:auto;margin:0 -14px;padding:0 14px}
-.pgrp{font-size:9px;color:var(--gold);letter-spacing:2px;font-weight:700;
+.pgrp{font-size:10.5px;color:var(--gold);letter-spacing:2px;font-weight:700;
   padding:14px 2px 7px;position:sticky;top:0;background:var(--panel)}
 .prow{width:100%;display:flex;align-items:center;gap:10px;padding:12px 11px;margin-bottom:6px;
   background:var(--bg);border:1px solid var(--line);border-radius:6px;
   font-size:13px;font-weight:700;letter-spacing:1px;color:var(--txt);text-align:left}
 .prow.on{border-color:var(--blue);background:rgba(0,204,255,.1);color:var(--blue)}
 .prow.off{opacity:.4}
-.prow .px{margin-left:auto;font-size:11px;font-weight:400;color:var(--lbl);letter-spacing:0}
+.prow .px{margin-left:auto;font-size:12px;font-weight:700;color:var(--lbl);letter-spacing:0}
 .prow .dot{width:15px;height:15px;border-radius:50%;border:1px solid var(--line);flex:0 0 auto}
 .prow.on .dot{border-color:var(--blue);box-shadow:inset 0 0 0 3.5px var(--bg),inset 0 0 0 9px var(--blue)}
 
@@ -121,7 +121,7 @@ input:focus,select:focus{border-color:var(--gold)}
   border-radius:50%;background:var(--dim);transition:.18s}
 .sw.on .tg{background:rgba(0,255,150,.2);border-color:var(--up)}
 .sw.on .tg::after{transform:translateX(19px);background:var(--up)}
-.sw div{font-size:12px} .sw small{color:#9aa4b0;font-size:10px;display:block;margin-top:2px}
+.sw div{font-size:13px;font-weight:700} .sw small{color:var(--mut);font-size:11.5px;font-weight:600;display:block;margin-top:3px;line-height:1.55}
 
 /* ---------- signal ---------- */
 .sig{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:13px}
@@ -131,9 +131,9 @@ input:focus,select:focus{border-color:var(--gold)}
 .sumcol{flex:0 0 auto;width:118px;display:flex;flex-direction:column;gap:4px}
 .sumrow{display:flex;align-items:center;gap:5px;background:var(--panel);border:1px solid var(--line);
   border-radius:5px;padding:4px 6px}
-.sumrow .k{font-size:7.5px;color:var(--lbl);letter-spacing:.8px;font-weight:700;width:31px}
-.sumrow .v{font-size:9px;font-weight:700;letter-spacing:.3px;margin-left:auto;text-align:right;flex:1}
-.sumrow .n{font-size:8.5px;font-weight:700;opacity:.85}
+.sumrow .k{font-size:9.5px;color:var(--lbl);letter-spacing:.8px;font-weight:700;width:36px}
+.sumrow .v{font-size:11px;font-weight:700;letter-spacing:.3px;margin-left:auto;text-align:right;flex:1}
+.sumrow .n{font-size:10.5px;font-weight:700;opacity:1}
 .verdictbar{display:flex;align-items:center;gap:9px;border-radius:6px;padding:10px 12px;margin-bottom:11px;
   border:1px solid}
 .verdictbar b{font-size:14px;letter-spacing:2px;flex:0 0 auto}
@@ -144,7 +144,7 @@ input:focus,select:focus{border-color:var(--gold)}
   text-shadow:0 0 10px rgba(0,255,150,.75);box-shadow:0 0 12px rgba(0,255,150,.15) inset}
 .tag.sell{background:rgba(255,68,68,.15);color:var(--dn);border:1px solid rgba(255,68,68,.5);
   text-shadow:0 0 10px rgba(255,68,68,.75);box-shadow:0 0 12px rgba(255,68,68,.15) inset}
-.tag.n{background:rgba(119,119,119,.15);color:var(--mut);border:1px solid var(--line)}
+.tag.n{background:rgba(119,119,119,.15);color:var(--mut);border:1px solid var(--line);font-weight:700}
 .gr{margin-left:auto;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;
   background:rgba(255,184,0,.15);color:var(--gold);border:1px solid rgba(255,184,0,.5);
   text-shadow:0 0 10px rgba(255,184,0,.7)}
@@ -159,14 +159,14 @@ input:focus,select:focus{border-color:var(--gold)}
 
 .lvls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
 .lvl{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 4px;text-align:center}
-.lvl>span{display:block;font-size:9px;color:var(--lbl);letter-spacing:1px;font-weight:700;margin-bottom:4px}
+.lvl>span{display:block;font-size:10.5px;color:var(--lbl);letter-spacing:1px;font-weight:700;margin-bottom:5px}
 .lvl b{font-size:13px;display:block}
 .lvl.sl b{color:var(--dn);text-shadow:0 0 9px rgba(255,68,68,.5)} .lvl.tp b{color:var(--up);text-shadow:0 0 9px rgba(0,255,150,.5)}
 
 .tfrow{display:flex;gap:5px;margin-top:10px}
 .tfp{flex:1;text-align:center;background:var(--panel);border:1px solid var(--line);
   border-radius:6px;padding:6px 2px}
-.tfp span{display:block;font-size:9px;color:var(--lbl);font-weight:700}
+.tfp span{display:block;font-size:10.5px;color:var(--lbl);font-weight:700}
 .tfp b{font-size:11px}
 .tfp.up b{color:var(--up);text-shadow:0 0 8px rgba(0,255,150,.5)} .tfp.dn b{color:var(--dn);text-shadow:0 0 8px rgba(255,68,68,.5)} .tfp.nu b{color:var(--mut)}
 
@@ -175,11 +175,11 @@ input:focus,select:focus{border-color:var(--gold)}
 
 /* ---------- table ---------- */
 table{width:100%;border-collapse:collapse;font-size:11px}
-th{text-align:left;font-size:9px;color:var(--lbl);letter-spacing:1px;text-transform:uppercase;
+th{text-align:left;font-size:10.5px;color:var(--lbl);letter-spacing:1px;text-transform:uppercase;
   padding:0 0 8px;font-weight:700;border-bottom:1px solid var(--line)}
 td{padding:9px 0;border-bottom:1px solid #1a1a1a}
 tr:last-child td{border-bottom:none}
-.up{color:var(--up);text-shadow:0 0 8px rgba(0,255,150,.35)} .dn{color:var(--dn);text-shadow:0 0 8px rgba(255,68,68,.35)} .mu{color:var(--mut)}
+.up{color:var(--up);text-shadow:0 0 8px rgba(0,255,150,.35)} .dn{color:var(--dn);text-shadow:0 0 8px rgba(255,68,68,.35)} .mu{color:var(--mut);font-weight:600}
 
 /* ---------- trades ---------- */
 .tr{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:10px}
@@ -188,23 +188,23 @@ tr:last-child td{border-bottom:none}
 .tr-h b{font-size:14px;letter-spacing:1px}
 .pl{margin-left:auto;font-size:16px;font-weight:700}
 .tr-g{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:11px;margin-bottom:9px}
-.tr-g div span{display:block;color:var(--lbl);font-size:9px;letter-spacing:.5px;font-weight:700}
+.tr-g div span{display:block;color:var(--lbl);font-size:10.5px;letter-spacing:.5px;font-weight:700}
 .bar{height:5px;border-radius:99px;background:#222;overflow:hidden;margin-bottom:9px;display:flex}
 .bar i{display:block;height:100%}
 
 .stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
 .st{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 5px;text-align:center}
-.st span{display:block;font-size:9px;color:var(--lbl);letter-spacing:1.2px;font-weight:700;margin-bottom:5px}
+.st span{display:block;font-size:10.5px;color:var(--lbl);letter-spacing:1.2px;font-weight:700;margin-bottom:5px}
 .st b{font-size:17px}
 
 .perf{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
 .pb{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px 4px;text-align:center}
 .pb b{display:block;font-size:19px;line-height:1.1}
-.pb span{display:block;font-size:8.5px;color:var(--lbl);letter-spacing:1.2px;font-weight:700;margin-top:5px}
-.pb em{display:block;font-style:normal;font-size:8.5px;color:#8a94a0;margin-top:3px;letter-spacing:.2px}
+.pb span{display:block;font-size:10px;color:var(--lbl);letter-spacing:1.2px;font-weight:700;margin-top:5px}
+.pb em{display:block;font-style:normal;font-size:10.5px;font-weight:600;color:var(--mut);margin-top:4px;letter-spacing:.2px}
 .ptot{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:16px;text-align:center}
 .ptot b{display:block;font-size:27px;line-height:1}
-.ptot span{display:block;font-size:9px;color:var(--lbl);letter-spacing:1.6px;font-weight:700;margin-top:6px}
+.ptot span{display:block;font-size:10.5px;color:var(--lbl);letter-spacing:1.6px;font-weight:700;margin-top:6px}
 
 .vbar{display:flex;height:26px;border-radius:6px;overflow:hidden;border:1px solid var(--line);margin:12px 0 8px}
 .vbar i{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
@@ -212,13 +212,13 @@ tr:last-child td{border-bottom:none}
 .vote3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .vc{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:13px 5px;text-align:center}
 .vc b{display:block;font-size:24px;line-height:1}
-.vc span{display:block;font-size:9px;color:var(--dim);letter-spacing:1.4px;font-weight:700;margin-top:5px}
+.vc span{display:block;font-size:10.5px;color:var(--mut);letter-spacing:1.4px;font-weight:700;margin-top:5px}
 .vc.b{border-color:rgba(0,255,150,.45)} .vc.s{border-color:rgba(255,68,68,.45)}
 .ag{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid #1a1a1a;font-size:11px}
 .ag:last-child{border:none}
 .ag .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ag .gp{font-size:8.5px;color:var(--lbl);letter-spacing:.5px;opacity:.8}
-.ag .vt{width:44px;text-align:center;padding:3px 0;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.5px}
+.ag .gp{font-size:10px;font-weight:600;color:var(--lbl);letter-spacing:.5px;opacity:1}
+.ag .vt{width:48px;text-align:center;padding:4px 0;border-radius:4px;font-size:10.5px;font-weight:700;letter-spacing:.5px}
 .ag .vt.b{background:rgba(0,255,150,.15);color:var(--up);border:1px solid rgba(0,255,150,.4);text-shadow:0 0 8px rgba(0,255,150,.6)}
 .ag .vt.s{background:rgba(255,68,68,.15);color:var(--dn);border:1px solid rgba(255,68,68,.4);text-shadow:0 0 8px rgba(255,68,68,.6)}
 .ag .vt.h{background:rgba(119,119,119,.12);color:var(--mut);border:1px solid var(--line)}
@@ -274,14 +274,14 @@ tr:last-child td{border-bottom:none}
 .an .up2{font-weight:800;color:var(--up);text-shadow:0 0 8px currentColor}
 .an .dn2{font-weight:800;color:var(--dn);text-shadow:0 0 8px currentColor}
 
-.empty{text-align:center;padding:26px 12px;color:#a8b2be;font-size:12px}
+.empty{text-align:center;padding:26px 12px;color:var(--mut);font-size:13px;font-weight:600;line-height:1.7}
 .empty div{font-size:30px;margin-bottom:8px;opacity:.4}
 
 /* ---------- nav ---------- */
 nav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:var(--panel);
   border-top:1px solid var(--line);display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
 nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 0;
-  font-size:7.5px;font-weight:700;letter-spacing:.3px;color:var(--lbl)}
+  font-size:9.5px;font-weight:700;letter-spacing:.3px;color:var(--lbl)}
 nav button i{font-style:normal;font-size:15px;filter:grayscale(1);opacity:.45}
 nav button.on{color:var(--gold);text-shadow:0 0 10px rgba(255,184,0,.6)} nav button.on i{filter:none;opacity:1}
 .badge{position:absolute;top:2px;margin-left:20px;background:var(--dn);color:#000;font-size:8px;
@@ -297,7 +297,7 @@ nav button.on{color:var(--gold);text-shadow:0 0 10px rgba(255,184,0,.6)} nav but
 .sh-h{display:flex;align-items:center;margin-bottom:14px}
 .sh-h h3{margin:0;font-size:15px;color:var(--gold);letter-spacing:2px;text-transform:uppercase}
 .sh-h button{margin-left:auto;font-size:22px;color:var(--mut);padding:0 6px}
-.hint{font-size:10.5px;color:#a8b2be;margin:6px 0 0;line-height:1.65}
+.hint{font-size:12px;font-weight:600;color:var(--mut);margin:7px 0 0;line-height:1.7;letter-spacing:.1px}
 .hint a{color:var(--blue)}
 
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;z-index:200;
@@ -332,12 +332,12 @@ nav button.on{color:var(--gold);text-shadow:0 0 10px rgba(255,184,0,.6)} nav but
 .hist .ic.m{background:rgba(119,119,119,.15);color:var(--mut);border:1px solid var(--line)}
 .hist .in{flex:1;min-width:0}
 .hist .in b{font-size:12px;display:block}
-.hist .in small{color:#9aa4b0;font-size:10px}
+.hist .in small{color:var(--mut);font-size:11.5px;font-weight:600}
 .hist .amt{font-size:13px;font-weight:700}
 
 /* ==================== GOLD THEME ==================== */
 body.lux{
-  --txt:#f5ecd8; --mut:#b09b6f; --dim:#8a7647; --lbl:#d9bb6a;
+  --txt:#f8f1e2; --mut:#d8c49a; --dim:#c2ab7c; --lbl:#f0d68a;
   --up:#2ee88a; --dn:#ff5a5a; --gold:#e8c063; --blue:#e8c063;
   --accRGB:212,163,60;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
@@ -610,7 +610,7 @@ body.t-navy{
   </div>
 
   <div class="card">
-    <p class="ttl">Live Agent Record <span class="sp"><button style="color:var(--dn);font-size:10px;font-weight:700" onclick="resetAgLive()">RESET</button></span></p>
+    <p class="ttl">Live Agent Record <span class="sp"><button style="color:var(--dn);font-size:11.5px;font-weight:700" onclick="resetAgLive()">RESET</button></span></p>
     <div id="agLiveOut"></div>
   </div>
 
@@ -654,7 +654,7 @@ body.t-navy{
     <p class="ttl">Open Trades <span class="sp" id="openT">0 open</span></p>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
       <button class="btn gold sm" style="flex:1" onclick="refreshOpen(true)">⟳ Refresh Rates</button>
-      <span class="mono" id="syncT" style="font-size:11px;color:var(--mut);min-width:96px;text-align:right">—</span>
+      <span class="mono" id="syncT" style="font-size:11px;color:var(--mut);min-width:96px;text-align:right;font-weight:600">—</span>
     </div>
     <div id="openBox"></div>
     <p class="hint" id="creditWarn"></p>
@@ -744,7 +744,7 @@ body.t-navy{
   <div style="background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
     <div style="flex:1">
       <b class="mono" id="verBig" style="font-size:14px">v—</b>
-      <small style="display:block;color:var(--mut);font-size:11px">Tap Update to fetch the latest build</small>
+      <small style="display:block;color:var(--mut);font-size:11px;font-weight:600">Tap Update to fetch the latest build</small>
     </div>
     <button class="btn gold sm" style="width:auto;padding:9px 13px" onclick="forceUpdate()">🔄 Update</button>
   </div>
@@ -863,7 +863,7 @@ body.t-navy{
     <button class="btn ghost sm" onclick="apiTest()">🔍 API Test</button>
     <button class="btn ghost sm" onclick="dayReset()">↺ Budget Reset</button>
   </div>
-  <div id="apiOut" class="mono hide" style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:10px;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto;margin-bottom:10px"></div>
+  <div id="apiOut" class="mono hide" style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:11.5px;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto;margin-bottom:10px"></div>
   <button class="btn ghost sm" style="margin-bottom:8px" onclick="unlockAll()">🔓 Reset Locked Pairs</button>
   <button class="btn ghost sm" onclick="wipeAll()" style="color:var(--dn)">Delete All Data</button>
 </div></div>
@@ -923,7 +923,7 @@ body.t-navy{
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '7.1.0';
+const VERSION = '7.1.1';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -1390,8 +1390,8 @@ async function runAI(){
   }catch(e){
     const short = String(e.message).split('. For more')[0].split(' * Quota')[0].slice(0,220);
     $('aiBox').innerHTML = `<div style="border:1px solid var(--dn);background:rgba(255,68,68,.07);border-radius:6px;padding:11px">
-      <b style="color:var(--dn);font-size:10px;letter-spacing:1.2px">AI DID NOT RESPOND</b>
-      <p class="hint" style="color:#f99;margin:5px 0 0">${short}</p></div>
+      <b style="color:var(--dn);font-size:11.5px;letter-spacing:1.2px">AI DID NOT RESPOND</b>
+      <p class="hint" style="color:#ffb3b3;font-weight:600;margin:5px 0 0">${short}</p></div>
       <p class="hint">${(S.gBad||[]).length ? `These models are unavailable on this key: <b class="mono">${S.gBad.join(', ')}</b><br>` : ''}
       Free key: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a></p>
       <button class="btn ghost sm" style="margin-top:8px" onclick="gReset()">↺ RE-DISCOVER MODELS</button>`;
@@ -2176,7 +2176,7 @@ async function runAnalyze(){
   const sym = S.pair;
   const note = sec => {
     const m = Math.floor(sec/60), ss = String(sec%60).padStart(2,'0');
-    btn.innerHTML = `⏳ ${m}:${ss} <small style="font-size:9px;opacity:.7">API limit</small>`;
+    btn.innerHTML = `⏳ ${m}:${ss} <small style="font-size:10.5px;opacity:.85">API limit</small>`;
   };
   try{
     if(isBad(sym)) throw apiErr(404, '', sym);
@@ -2389,8 +2389,8 @@ function renderSignal(){
       </div>
       <div class="lvls">
         <div class="lvl"><span>ENTRY</span><b class="mono">${fmt(s.sym,s.live)}</b></div>
-        <div class="lvl sl"><span>SL · $${s.slD}</span><b class="mono">${fmt(s.sym,s.sl)}</b><small style="display:block;font-size:9px;color:var(--mut)">${s.slPips} pips</small></div>
-        <div class="lvl tp"><span>TP · $${s.tpD}</span><b class="mono">${fmt(s.sym,s.tp)}</b><small style="display:block;font-size:9px;color:var(--mut)">${s.tpPips} pips</small></div>
+        <div class="lvl sl"><span>SL · $${s.slD}</span><b class="mono">${fmt(s.sym,s.sl)}</b><small style="display:block;font-size:10.5px;color:var(--mut);font-weight:600">${s.slPips} pips</small></div>
+        <div class="lvl tp"><span>TP · $${s.tpD}</span><b class="mono">${fmt(s.sym,s.tp)}</b><small style="display:block;font-size:10.5px;color:var(--mut);font-weight:600">${s.tpPips} pips</small></div>
       </div>
       ${(() => { const f = finalCall(s); return `
       <div class="verdictbar" style="border-color:${f.c};background:${f.bg}">
@@ -2405,11 +2405,11 @@ function renderSignal(){
       ${newsBox}${weak}${warn}
       ${lastVotes && lastVotes.sym===s.sym ? `<div style="display:flex;align-items:center;gap:8px;background:var(--panel);
         border:1px solid var(--line);border-radius:6px;padding:9px 11px;margin-top:10px" onclick="go('Votes',document.querySelector('nav button[data-pg=Votes]'))">
-        <span style="font-size:10px;color:var(--mut);letter-spacing:1px">50 AGENTS</span>
+        <span style="font-size:11.5px;color:var(--mut);letter-spacing:1px;font-weight:600">50 AGENTS</span>
         <span class="mono up" style="font-size:12px">${lastVotes.buy}B</span>
         <span class="mono mu" style="font-size:12px">${lastVotes.hold}H</span>
         <span class="mono dn" style="font-size:12px">${lastVotes.sell}S</span>
-        <span style="margin-left:auto;font-size:10px;color:var(--gold)">VIEW ›</span>
+        <span style="margin-left:auto;font-size:11.5px;color:var(--gold)">VIEW ›</span>
       </div>` : ''}
       <div class="acts">
         <button class="btn ${s.dir==='SELL'?'r':'g'} sm" style="flex:2" onclick="openQuick('APP')">I Took This Trade</button>
@@ -2518,7 +2518,7 @@ async function runScan(){
         const bars = await getSeries(sym, tf, 120, sec => {
           const m = Math.floor(sec/60), ss = String(sec%60).padStart(2,'0');
           btn.innerHTML = `<span style="letter-spacing:2px">⏳ ${m}:${ss}</span>
-            <small style="display:block;font-size:9px;opacity:.7;letter-spacing:.5px">API limit — will resume automatically</small>`;
+            <small style="display:block;font-size:10.5px;opacity:.85;letter-spacing:.5px">API limit — will resume automatically</small>`;
         });
         if(!base){ base = bars; barCache[sym] = bars; }
         res[tf] = tfBias(bars);
@@ -2745,11 +2745,11 @@ function renderSigHist(){
       return `<div class="hist">
         <div class="ic ${ic}">${lbl}</div>
         <div class="in">
-          <b class="mono">${SPECS[g.sym]?SPECS[g.sym].n:g.sym} <span class="${g.dir==='BUY'?'up':'dn'}" style="font-size:10px">${g.dir}</span>
-            <span class="mu" style="font-size:10px">${g.grade} ${g.q}%</span></b>
+          <b class="mono">${SPECS[g.sym]?SPECS[g.sym].n:g.sym} <span class="${g.dir==='BUY'?'up':'dn'}" style="font-size:11.5px">${g.dir}</span>
+            <span class="mu" style="font-size:11.5px">${g.grade} ${g.q}%</span></b>
           <small>${dt12(g.at)} · ${g.tf}${g.vote?` · agents ${g.vote.verdict} ${g.vote.conf}%`:''}${g.an?` · ${g.an.pct}%`:''}</small>
         </div>
-        ${g.out==='OPEN' ? '<span class="mu" style="font-size:10px" data-ago="'+g.at+'">'+ago(g.at)+'</span>'
+        ${g.out==='OPEN' ? '<span class="mu" style="font-size:11.5px" data-ago="'+g.at+'">'+ago(g.at)+'</span>'
           : `<div class="amt mono ${g.pl>=0?'up':'dn'}">${money(g.pl)}</div>`}
       </div>`;
     }).join('')}`;
@@ -2902,14 +2902,14 @@ function renderBt(){
       const e = r.wr - b.beWR;
       const col = e >= 3 ? 'var(--up)' : e <= -3 ? 'var(--dn)' : 'var(--gold)';
       return `<div class="strrow">
-        <b style="width:132px;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name}</b>
+        <b style="width:132px;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name}</b>
         <div class="t"><i style="width:${Math.min(100,r.wr)}%;background:${col}"></i></div>
-        <span class="mono" style="width:52px;color:${col}">${r.wr}% <small style="opacity:.6">${r.n}</small></span>
+        <span class="mono" style="width:52px;color:${col}">${r.wr}% <small style="opacity:.85">${r.n}</small></span>
       </div>`;
     }).join('')}
 
     <div style="border:1px solid var(--line);border-radius:6px;padding:11px;margin-top:12px">
-      <b style="color:var(--gold);font-size:10px;letter-spacing:1.5px">TAKEAWAY</b>
+      <b style="color:var(--gold);font-size:11.5px;letter-spacing:1.5px">TAKEAWAY</b>
       <p class="hint" style="margin-top:5px">
         <b class="up">${good.length} agents</b> are above breakeven, <b class="dn">${bad.length}</b> below.
         ${bad.length ? `<br><br>Weakest: ${bad.slice(-4).map(x=>x.name).join(', ')}.` : ''}
@@ -2932,9 +2932,9 @@ function renderAgLive(){
     rows.map(r => {
       const col = r.wr >= be+3 ? 'var(--up)' : r.wr <= be-3 ? 'var(--dn)' : 'var(--gold)';
       return `<div class="strrow">
-        <b style="width:132px;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.n}</b>
+        <b style="width:132px;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.n}</b>
         <div class="t"><i style="width:${Math.min(100,r.wr)}%;background:${col}"></i></div>
-        <span class="mono" style="width:52px;color:${col}">${r.wr}% <small style="opacity:.6">${r.votes}</small></span>
+        <span class="mono" style="width:52px;color:${col}">${r.wr}% <small style="opacity:.85">${r.votes}</small></span>
       </div>`;
     }).join('') +
     `<p class="hint">${rows[0].votes < 30 ? '⚠ Sample size is still small — these numbers only become reliable past 200 votes.' : ''}</p>`;
@@ -3171,7 +3171,7 @@ function renderVotes(){
     </div>
     <div class="vbar">
       ${bp?`<i style="width:${bp}%;background:var(--up)">${v.buy}</i>`:''}
-      ${hp?`<i style="width:${hp}%;background:#3a3a3a;color:var(--mut)">${v.hold}</i>`:''}
+      ${hp?`<i style="width:${hp}%;background:#3a3a3a;color:var(--mut);font-weight:600">${v.hold}</i>`:''}
       ${sp?`<i style="width:${sp}%;background:var(--dn)">${v.sell}</i>`:''}
     </div>
     <div class="vote3">
@@ -3313,13 +3313,13 @@ function renderNews(){
     const when = past ? 'ho chuki'
       : mins < 60 ? `in ${mins} min`
       : `in ${Math.round(mins/60)} h`;
-    return `<div class="hist" style="${past?'opacity:.4':''}">
-      <div class="ic" style="background:transparent;border:1px solid ${col};color:${col};font-size:9px">${e.c}</div>
+    return `<div class="hist" style="${past?'opacity:.62':''}">
+      <div class="ic" style="background:transparent;border:1px solid ${col};color:${col};font-size:10.5px">${e.c}</div>
       <div class="in">
         <b style="font-size:12px">${e.t}</b>
         <small>${t12(e.d)} · ${when}${e.f?` · forecast ${e.f}`:''}${e.p?` · prev ${e.p}`:''}</small>
       </div>
-      ${soon ? '<span class="tag sell" style="font-size:9px">SOON</span>' : ''}
+      ${soon ? '<span class="tag sell" style="font-size:10.5px">SOON</span>' : ''}
     </div>`;
   }).join('') + `<p class="hint">Times are shown in your phone's timezone. Source: ForexFactory.</p>`;
 }
@@ -3367,7 +3367,7 @@ function buildTicker(){
   let newest = 0;
   const list = TICKER.filter(x=>!isBad(x)).map(sym=>{
     const d = S.px[sym] || prices[sym];
-    if(!d || !d.p) return `<span>${sym} <b class="mono" style="color:var(--dim)">—</b></span>`;
+    if(!d || !d.p) return `<span>${sym} <b class="mono" style="color:var(--dim);font-weight:600">—</b></span>`;
     if(d.t && d.t > newest) newest = d.t;
     const c = d.chg || 0, up = c >= 0;
     const col = c === 0 ? 'var(--txt)' : up ? 'var(--up)' : 'var(--dn)';
@@ -3375,7 +3375,7 @@ function buildTicker(){
     return `<span>${sym} <b class="mono" style="color:${col};text-shadow:0 0 8px ${col}">${ar} ${fmt(sym,d.p)}</b></span>`;
   }).join('');
   const age = newest
-    ? `<span style="color:var(--dim)">⟳ ${t12(newest)} · tap to refresh</span>`
+    ? `<span style="color:var(--dim);font-weight:600">⟳ ${t12(newest)} · tap to refresh</span>`
     : `<span style="color:var(--gold)">⟳ tap karke rate lao</span>`;
   $('tick').innerHTML = list + age;
 }
@@ -3502,7 +3502,7 @@ function drawQuick(){
     <label>How to size SL / TP</label>
     <div class="chips" style="margin-bottom:12px">
       <button class="chip ${!atrOn?'on gold':''}" onclick="qtSet('mode','DOLLAR')">Fixed $</button>
-      <button class="chip ${atrOn?'on gold':''}" onclick="qtSet('mode','ATR')" ${q.atr>0?'':'disabled style="opacity:.4"'}>ATR based</button>
+      <button class="chip ${atrOn?'on gold':''}" onclick="qtSet('mode','ATR')" ${q.atr>0?'':'disabled style="opacity:.45"'}>ATR based</button>
     </div>
     ${q.atr>0 ? '' : '<p class="hint" style="margin:-6px 0 12px">Analyze this pair first to enable ATR mode.</p>'}
 
@@ -3510,7 +3510,7 @@ function drawQuick(){
       <div class="grid3" style="margin-bottom:10px">
         <div><label>SL = ATR ×</label><input class="mono" type="number" step="0.1" value="${q.atrSL}" oninput="qtSet('atrSL',+this.value,1)"></div>
         <div><label>TP = SL ×</label><input class="mono" type="number" step="0.1" value="${q.atrRR}" oninput="qtSet('atrRR',+this.value,1)"></div>
-        <div><label>Lots</label><input class="mono" id="qLot" type="number" step="0.01" value="${lv.lots}" ${q.autoLot?'disabled style="opacity:.5"':''} oninput="qtSet('lots',+this.value,1)"></div>
+        <div><label>Lots</label><input class="mono" id="qLot" type="number" step="0.01" value="${lv.lots}" ${q.autoLot?'disabled style="opacity:.45"':''} oninput="qtSet('lots',+this.value,1)"></div>
       </div>
       <div class="sw ${q.autoLot?'on':''}" onclick="qtSet('autoLot',!qtState.autoLot)">
         <div class="tg"></div>
@@ -3543,7 +3543,7 @@ function drawQuick(){
       const e = checkStops(sym, q.dir, q.entry, sl, tp);
       return e.length ? `<div style="border:1px solid var(--dn);background:rgba(255,68,68,.1);border-radius:6px;padding:11px;margin:12px 0">
         <b style="color:var(--dn);font-size:11px;letter-spacing:1px">⚠ STOPS TOO TIGHT</b>
-        <p class="hint" style="color:#f99;margin:5px 0 0">${e.join('<br>')}<br><br>
+        <p class="hint" style="color:#ffb3b3;font-weight:600;margin:5px 0 0">${e.join('<br>')}<br><br>
         ${SPECS[sym].n} needs at least <b>${minStop(sym)} pips</b> of room.
         Increase the TP/SL dollar values, or adjust this pair's minimum in Settings.</p></div>` : '';
     })()}
@@ -3580,13 +3580,13 @@ function qtLevels(){
 
   $('qtLv').innerHTML = `
     <div class="lvl"><span>ENTRY</span><b class="mono">${fmt(sym, sendPx)}</b>
-      <small style="display:block;font-size:9px;color:var(--mut)">${lv.lots} lot</small></div>
+      <small style="display:block;font-size:10.5px;color:var(--mut);font-weight:600">${lv.lots} lot</small></div>
     <div class="lvl sl"><span>STOP LOSS</span><b class="mono">${fmt(sym, sl + shift)}</b>
-      <small style="display:block;font-size:10px;color:var(--dn);font-weight:700">−$${lv.slD}</small>
-      <small style="display:block;font-size:9px;color:var(--mut)">${lv.slPips} pips</small></div>
+      <small style="display:block;font-size:11.5px;color:var(--dn);font-weight:700">−$${lv.slD}</small>
+      <small style="display:block;font-size:10.5px;color:var(--mut);font-weight:600">${lv.slPips} pips</small></div>
     <div class="lvl tp"><span>TAKE PROFIT</span><b class="mono">${fmt(sym, tp + shift)}</b>
-      <small style="display:block;font-size:10px;color:var(--up);font-weight:700">+$${lv.tpD}</small>
-      <small style="display:block;font-size:9px;color:var(--mut)">${lv.tpPips} pips</small></div>`;
+      <small style="display:block;font-size:11.5px;color:var(--up);font-weight:700">+$${lv.tpD}</small>
+      <small style="display:block;font-size:10.5px;color:var(--mut);font-weight:600">${lv.tpPips} pips</small></div>`;
 
   const rr = lv.tpD / (lv.slD || 1);
   const beW = 100/(1+rr);
@@ -3594,8 +3594,8 @@ function qtLevels(){
   if(warnEl){
     warnEl.innerHTML = rr < 1
       ? `<div style="border:1px solid var(--dn);background:rgba(255,68,68,.08);border-radius:6px;padding:10px;margin-top:10px">
-          <b style="color:var(--dn);font-size:10px;letter-spacing:1.2px">⚠ R:R 1:${rr.toFixed(2)} — THE MATH IS AGAINST YOU</b>
-          <p class="hint" style="color:#f99;margin:4px 0 0">One stop wipes out ${(1/rr).toFixed(1)} take-profits.
+          <b style="color:var(--dn);font-size:11.5px;letter-spacing:1.2px">⚠ R:R 1:${rr.toFixed(2)} — THE MATH IS AGAINST YOU</b>
+          <p class="hint" style="color:#ffb3b3;font-weight:600;margin:4px 0 0">One stop wipes out ${(1/rr).toFixed(1)} take-profits.
           You would need a <b>${beW.toFixed(0)}%</b> win rate just to break even — more once spread is included.
           Raise the TP or tighten the SL.</p></div>`
       : rr >= 1.5
@@ -3948,7 +3948,7 @@ function renderPerf(){
         <em>${tpHit} TP${mWin?` + ${mWin} manual`:''}</em></div>
       <div class="pb"><b class="dn">${loss.length}</b><span>LOSS</span>
         <em>${slHit} SL${mLoss?` + ${mLoss} manual`:''}</em></div>
-      <div class="pb"><b style="color:var(--mut)">${flat.length}</b><span>BREAKEVEN</span>
+      <div class="pb"><b style="color:var(--mut);font-weight:600">${flat.length}</b><span>BREAKEVEN</span>
         <em>closed at 0.00</em></div>
     </div>
     <div class="perf">
@@ -4150,7 +4150,7 @@ function renderHedge(){
     <p class="ttl">By Correlation ${anyLive?'<span class="sp" style="color:var(--up)">live data</span>':'<span class="sp">estimate</span>'}</p>
     ${rows.map(r => `
       <div class="hist">
-        <div class="ic ${r.corr>0?'w':'l'}" style="font-size:10px">${r.corr>0?'+':''}${r.corr}</div>
+        <div class="ic ${r.corr>0?'w':'l'}" style="font-size:11.5px">${r.corr>0?'+':''}${r.corr}</div>
         <div class="in">
           <b class="mono">${r.sym} <span class="${r.dir==='BUY'?'up':'dn'}" style="font-size:11px">${r.dir}</span></b>
           <small>${r.lots} lot · ${r.corr>0?'moves together':'moves inversely'}${r.live?'':' · estimated'}</small>
@@ -4212,7 +4212,7 @@ function renderCorrBrowser(){
         <small>same pair · 100% offset</small></div>
     </div>` +
     rows.map(r => `<div class="hist">
-      <div class="ic ${r.dir==='BUY'?'w':'l'}" style="font-size:9px">${r.dir==='BUY'?'▲':'▼'}</div>
+      <div class="ic ${r.dir==='BUY'?'w':'l'}" style="font-size:10.5px">${r.dir==='BUY'?'▲':'▼'}</div>
       <div class="in"><b class="mono">${SPECS[r.sym].n} <span class="${r.dir==='BUY'?'up':'dn'}">${r.dir}</span></b>
         <small>${r.live?'live':'estimated'} ${r.v>0?'+':''}${r.v}</small></div>
     </div>`).join('') +
@@ -4621,8 +4621,8 @@ if(shotIn) shotIn.addEventListener('change', async e => {
   }catch(err){
     $('shotState').textContent = 'failed';
     box.innerHTML = `<div style="border:1px solid var(--dn);background:rgba(255,68,68,.08);border-radius:6px;padding:12px">
-      <b style="color:var(--dn);font-size:10px;letter-spacing:1.2px">ANALYSIS FAILED</b>
-      <p class="hint" style="color:#f99;margin:5px 0 0">${err.message}</p></div>`;
+      <b style="color:var(--dn);font-size:11.5px;letter-spacing:1.2px">ANALYSIS FAILED</b>
+      <p class="hint" style="color:#ffb3b3;font-weight:600;margin:5px 0 0">${err.message}</p></div>`;
   }
 });
 
@@ -4656,7 +4656,7 @@ function renderShot(){
 
   if(dir === 'UNREADABLE'){
     box.innerHTML = `<div style="border:1px solid var(--gold);background:rgba(255,184,0,.07);border-radius:6px;padding:12px">
-      <b style="color:var(--gold);font-size:10px;letter-spacing:1.2px">\u26a0 COULD NOT READ THE CHART</b>
+      <b style="color:var(--gold);font-size:11.5px;letter-spacing:1.2px">\u26a0 COULD NOT READ THE CHART</b>
       <p class="hint" style="margin:5px 0 0">${d.reasoning || 'The image was not clear enough.'}</p>
       <p class="hint" style="margin:8px 0 0">Try a screenshot where the price axis and the pair name are both visible.</p></div>`;
     return;
@@ -4680,32 +4680,32 @@ function renderShot(){
         <div class="lvl"><span>ENTRY</span><b class="mono">${P(d.entry)}</b></div>
         <div class="lvl sl"><span>STOP LOSS</span><b class="mono">${P(d.stop_loss)}</b></div>
         <div class="lvl tp"><span>TAKE PROFIT</span><b class="mono">${P(d.take_profit_1)}</b>
-          ${isFinite(d.take_profit_2) ? `<small style="display:block;font-size:9px;color:var(--mut)">TP2 ${P(d.take_profit_2)}</small>` : ''}</div>
+          ${isFinite(d.take_profit_2) ? `<small style="display:block;font-size:10.5px;color:var(--mut);font-weight:600">TP2 ${P(d.take_profit_2)}</small>` : ''}</div>
       </div>
       <p class="hint" style="margin:0 0 12px">${rrLine(d)}</p>` : ''}
 
     <div style="border:1px solid var(--line);border-radius:6px;padding:11px;margin-bottom:10px">
-      <b style="color:var(--gold);font-size:10px;letter-spacing:1.5px">\ud83d\udcc8 TREND &amp; STRUCTURE</b>
+      <b style="color:var(--gold);font-size:11.5px;letter-spacing:1.5px">\ud83d\udcc8 TREND &amp; STRUCTURE</b>
       <p class="hint" style="margin:5px 0 8px">${d.trend || '\u2014'}</p>
       <div class="lbl"><span>Resistance</span><b class="mono" style="font-size:11px">${lvls(d.resistance)}</b></div>
       <div class="lbl"><span>Support</span><b class="mono" style="font-size:11px">${lvls(d.support)}</b></div>
     </div>
 
     <div style="border:1px solid var(--line);border-radius:6px;padding:11px;margin-bottom:10px">
-      <b style="color:var(--gold);font-size:10px;letter-spacing:1.5px">\ud83d\udcad REASONING</b>
+      <b style="color:var(--gold);font-size:11.5px;letter-spacing:1.5px">\ud83d\udcad REASONING</b>
       <p class="hint" style="margin:5px 0 0">${d.reasoning || '\u2014'}</p>
     </div>
 
     ${d.invalidation ? `<div style="border:1px solid var(--gold);border-radius:6px;padding:11px;margin-bottom:10px;background:rgba(255,184,0,.05)">
-      <b style="color:var(--gold);font-size:10px;letter-spacing:1.5px">\ud83c\udfaf INVALIDATION</b>
+      <b style="color:var(--gold);font-size:11.5px;letter-spacing:1.5px">\ud83c\udfaf INVALIDATION</b>
       <p class="hint" style="margin:5px 0 0">${d.invalidation}</p></div>` : ''}
 
     ${d.counter_trade ? `<div style="border:1px solid var(--line);border-radius:6px;padding:11px;margin-bottom:10px">
-      <b style="color:var(--gold);font-size:10px;letter-spacing:1.5px">\ud83d\udd04 COUNTER-TRADE</b>
+      <b style="color:var(--gold);font-size:11.5px;letter-spacing:1.5px">\ud83d\udd04 COUNTER-TRADE</b>
       <p class="hint" style="margin:5px 0 0">${d.counter_trade}</p></div>` : ''}
 
     <div style="border:1px solid var(--dn);background:rgba(255,68,68,.07);border-radius:6px;padding:10px;margin-bottom:12px">
-      <p class="hint" style="color:#f99;margin:0">These levels were read from your screenshot, not from live data. Check them against the current price before acting.</p>
+      <p class="hint" style="color:#ffb3b3;font-weight:600;margin:0">These levels were read from your screenshot, not from live data. Check them against the current price before acting.</p>
     </div>
 
     ${isTrade && sym ? `<button class="btn gold" style="margin-bottom:8px" onclick="startTrack()">\u26a1 TRACK THIS SETUP</button>` : ''}
@@ -4965,7 +4965,7 @@ function lotScaleNote(){
     rrBox.innerHTML = rr < 1
       ? `<div style="border:1px solid var(--dn);background:rgba(255,68,68,.08);border-radius:6px;padding:11px;margin:8px 0">
           <b style="color:var(--dn);font-size:11px;letter-spacing:1px">⚠ R:R 1:${rr.toFixed(2)}</b>
-          <p class="hint" style="color:#f99;margin:5px 0 0">
+          <p class="hint" style="color:#ffb3b3;font-weight:600;margin:5px 0 0">
           Breakeven needs a <b>${be.toFixed(0)}%</b> win rate. Good systems sit around 55-65%.<br><br>
           Suggestion: TP <b>$${l}</b> (R:R 1:1, needs ${(100/2).toFixed(0)}%) or TP <b>$${(l*1.5).toFixed(1)}</b> (R:R 1:1.5, needs 40%).</p></div>`
       : `<p class="hint" style="color:${rr>=1.5?'var(--up)':'var(--gold)'};margin:6px 0">
@@ -5022,7 +5022,7 @@ const pickVal = {main:null, manual:null, corr:null, minstop:null, bt:null};
 
 function pickLabel(el, sym){
   if(!el) return;
-  el.innerHTML = `<span>${sym}</span>${isBad(sym)?' <span style="font-size:9px;color:var(--dim);margin-left:6px">LOCKED</span>':''}<i>▼ CHANGE</i>`;
+  el.innerHTML = `<span>${sym}</span>${isBad(sym)?' <span style="font-size:10.5px;color:var(--dim);margin-left:6px;font-weight:600">LOCKED</span>':''}<i>▼ CHANGE</i>`;
   el.classList.toggle('lock', isBad(sym));
 }
 function fillPairs(){
