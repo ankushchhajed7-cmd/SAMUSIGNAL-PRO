@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SamuSignal Pro — Setup</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#03100e">
+<link rel="icon" href="./favicon.png">
+<style>
+:root{--bg:#03100e;--card:#08201c;--line:#12463c;--txt:#e8f5f1;--mut:#a8f0d4;
+  --acc:#3fc9ab;--up:#12c98a;--dn:#f2545b;--warn:#e8b45a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:'Courier New',Courier,monospace;
+  font-size:13px;line-height:1.65;padding:16px 12px 70px}
+.wrap{max-width:640px;margin:0 auto}
+h1{font-size:17px;letter-spacing:3px;color:var(--acc);text-align:center;margin:0 0 4px}
+.sub{text-align:center;font-size:11.5px;color:var(--mut);margin:0 0 20px;letter-spacing:1px;font-weight:700}
+.card{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:15px;margin-bottom:14px}
+.step{display:flex;align-items:center;gap:9px;font-size:12.5px;letter-spacing:1.6px;
+  color:var(--acc);font-weight:800;margin:0 0 12px;text-transform:uppercase}
+.num{width:23px;height:23px;border-radius:50%;background:var(--acc);color:#03100e;
+  display:flex;align-items:center;justify-content:center;font-size:12px;flex:0 0 auto}
+label{display:block;font-size:11.5px;font-weight:700;color:var(--acc);letter-spacing:1px;margin:10px 0 5px}
+input,textarea,select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:7px;
+  padding:11px;color:var(--txt);font-family:inherit;font-size:12.5px;font-weight:600}
+textarea{resize:vertical;font-size:10.5px;line-height:1.5;white-space:pre;overflow-x:auto}
+button{width:100%;background:transparent;border:1px solid var(--line);border-radius:7px;padding:12px;
+  color:var(--txt);font-family:inherit;font-size:12px;font-weight:800;letter-spacing:1.2px;
+  cursor:pointer;margin-top:10px}
+button.go{border-color:var(--acc);color:var(--acc);background:rgba(63,201,171,.08)}
+.hint{font-size:11.5px;color:var(--mut);font-weight:600;margin:8px 0 0}
+.ok{color:var(--up);font-weight:800}
+.bad{color:var(--dn);font-weight:800}
+.warnT{color:var(--warn);font-weight:800}
+.res{border:1px solid var(--line);border-radius:8px;padding:11px;margin-top:11px;font-size:12px}
+.res div{margin-bottom:6px}
+.res div:last-child{margin-bottom:0}
+.pill{display:inline-block;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:800;
+  letter-spacing:1px;margin-right:7px}
+.pill.p{background:rgba(18,201,138,.18);color:var(--up)}
+.pill.f{background:rgba(242,84,91,.18);color:var(--dn)}
+.hide{display:none}
+code{background:var(--bg);padding:1px 5px;border-radius:4px;color:var(--acc);font-size:11.5px}
+ol{padding-left:19px;margin:8px 0}
+li{margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>SAMUSIGNAL PRO</h1>
+  <p class="sub">SETUP WIZARD</p>
+
+  <!-- 1 -->
+  <div class="card">
+    <p class="step"><span class="num">1</span>Paste your three values</p>
+    <label>Firebase Database URL</label>
+    <input id="db" placeholder="https://samusignal-pro-default-rtdb....firebasedatabase.app">
+    <label>Firebase Web API key</label>
+    <input id="key" placeholder="AIzaSy...">
+    <label>Your admin User UID</label>
+    <input id="uid" placeholder="from Authentication &gt; Users">
+    <label>Build type</label>
+    <select id="mode">
+      <option value="direct">direct — UPI QR, you activate manually (APK)</option>
+      <option value="play">play — Google Play Billing (Play Store)</option>
+    </select>
+    <button class="go" onclick="gen()">GENERATE MY FILES</button>
+    <p class="hint">Nothing is sent anywhere. This page runs entirely in your browser.</p>
+  </div>
+
+  <!-- 2 -->
+  <div class="card hide" id="c2">
+    <p class="step"><span class="num">2</span>Copy into config.js</p>
+    <p class="hint" style="margin-top:0">In GitHub, open <code>config.js</code>, tap the pencil, delete everything, paste this, then Commit.</p>
+    <textarea id="outCfg" rows="12" readonly></textarea>
+    <button onclick="cp('outCfg',this)">COPY config.js</button>
+  </div>
+
+  <!-- 3 -->
+  <div class="card hide" id="c3">
+    <p class="step"><span class="num">3</span>Publish these rules</p>
+    <p class="hint" style="margin-top:0">Your UID is already filled in. Firebase console &rarr; Realtime Database &rarr; <b>Rules</b> tab &rarr; delete everything &rarr; paste &rarr; <b>Publish</b>.</p>
+    <textarea id="outRules" rows="14" readonly></textarea>
+    <button onclick="cp('outRules',this)">COPY RULES</button>
+  </div>
+
+  <!-- 4 -->
+  <div class="card hide" id="c4">
+    <p class="step"><span class="num">4</span>Test the published rules</p>
+    <p class="hint" style="margin-top:0">This actually talks to your database and tries the attacks a cheater would try. Run it <b>after</b> publishing.</p>
+    <button class="go" onclick="runTests()">RUN SECURITY TESTS</button>
+    <div id="testOut"></div>
+  </div>
+
+  <!-- 5 -->
+  <div class="card hide" id="c5">
+    <p class="step"><span class="num">5</span>Last two things</p>
+    <ol>
+      <li>Replace <code>pay-qr.png</code> with your real UPI QR (fixed amount &#8377;7,999).</li>
+      <li>Rename <code>admin.html</code> to something unguessable, e.g. <code>admin-k7m2x9.html</code>, and bookmark it.</li>
+    </ol>
+    <p class="hint">Then open the app. The header should show <b>7 DAYS LEFT</b>. Tap it to see your Device ID, paste that into the admin page, and activate yourself as a test.</p>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const RULES_TPL = `{
+  "//": "SamuSignal Pro licence rules. Replace YOUR_ADMIN_UID with the UID of",
+  "//2": "your own Firebase Auth account (Console > Authentication > Users).",
+  "//3": "Paste this whole file into Realtime Database > Rules and Publish.",
+
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "devices": {
+      "$code": {
+        "//": "Anyone who knows their own random device code may read it.",
+        "//2": "The parent has no read rule, so the list cannot be enumerated.",
+        ".read": true,
+
+        "//3": "A device may create its own trial record exactly once, and only",
+        "//4": "with status 'trial' and a trial end no further than 7 days out.",
+        "//5": "After that, only the admin can write. A user cannot self-activate.",
+        ".write": "auth.uid === 'YOUR_ADMIN_UID' || (!data.exists() && newData.child('status').val() === 'trial' && newData.child('trialEnds').val() <= now + 604800000 && newData.child('trialEnds').val() > now && newData.child('createdAt').val() <= now + 60000)",
+
+        ".validate": "newData.hasChildren(['createdAt','trialEnds','status'])",
+
+        "status":     { ".validate": "newData.isString() && newData.val().length < 20" },
+        "createdAt":  { ".validate": "newData.isNumber()" },
+        "trialEnds":  { ".validate": "newData.isNumber()" },
+        "activatedAt":{ ".validate": "newData.isNumber()" },
+        "restoreCode":{ ".validate": "newData.isString() && newData.val().length <= 16" },
+        "plan":       { ".validate": "newData.isString() && newData.val().length < 20" },
+        "fp":         { ".validate": "newData.isString() && newData.val().length <= 16" },
+        "v":          { ".validate": "newData.isString() && newData.val().length <= 12" },
+
+        "seats": {
+          "$fp": {
+            "//": "Restore onto extra devices, capped at 3 seats by the database itself.",
+            ".write": "auth.uid === 'YOUR_ADMIN_UID' || (!data.exists() && newData.parent().numChildren() <= 3 && root.child('devices').child($code).child('status').val() === 'active')",
+            ".validate": "newData.isNumber()"
+          }
+        },
+
+        "$other": { ".validate": false }
+      }
+    },
+
+    "restore": {
+      "$code": {
+        "//": "Maps a restore code to its device. Readable so the app can resolve it,",
+        "//2": "writable only by the admin, so nobody can point a code at their own device.",
+        ".read": true,
+        ".write": "auth.uid === 'YOUR_ADMIN_UID'",
+        ".validate": "newData.isString() && newData.val().length <= 24"
+      }
+    },
+
+    "requests": {
+      "//": "Only the admin can list payment requests.",
+      ".read": "auth.uid === 'YOUR_ADMIN_UID'",
+      "$id": {
+        "//": "A user may file one new request; they cannot edit or approve it.",
+        ".write": "auth.uid === 'YOUR_ADMIN_UID' || (!data.exists() && newData.child('status').val() === 'pending')",
+        ".validate": "newData.hasChildren(['deviceCode','at','status'])",
+        "deviceCode": { ".validate": "newData.isString() && newData.val().length <= 24" },
+        "name":       { ".validate": "newData.isString() && newData.val().length <= 80" },
+        "txn":        { ".validate": "newData.isString() && newData.val().length <= 80" },
+        "contact":    { ".validate": "newData.isString() && newData.val().length <= 120" },
+        "amount":     { ".validate": "newData.isString() && newData.val().length <= 20" },
+        "source":     { ".validate": "newData.isString() && newData.val().length <= 20" },
+        "v":          { ".validate": "newData.isString() && newData.val().length <= 12" },
+        "at":         { ".validate": "newData.isNumber() && newData.val() <= now + 60000" },
+        "status":     { ".validate": "newData.isString() && newData.val().length < 20" },
+        "doneAt":     { ".validate": "newData.isNumber()" },
+        "restoreCode":{ ".validate": "newData.isString() && newData.val().length <= 16" },
+        "$other": { ".validate": false }
+      }
+    },
+
+    "support": {
+      "//": "Readable so a user can see the reply to their own message.",
+      "//2": "Messages are not secret, but they do carry no personal data unless",
+      "//3": "the user chooses to add a contact detail.",
+      ".read": true,
+      "$id": {
+        ".write": "auth.uid === 'YOUR_ADMIN_UID' || (!data.exists() && newData.child('status').val() === 'open' && newData.child('message').val().length <= 2000)",
+        ".validate": "newData.hasChildren(['deviceCode','message','at','status'])",
+        "deviceCode": { ".validate": "newData.isString() && newData.val().length <= 24" },
+        "topic":      { ".validate": "newData.isString() && newData.val().length <= 40" },
+        "message":    { ".validate": "newData.isString() && newData.val().length <= 2000" },
+        "contact":    { ".validate": "newData.isString() && newData.val().length <= 120" },
+        "reply":      { ".validate": "newData.isString() && newData.val().length <= 2000" },
+        "app":        { ".validate": "newData.isString() && newData.val().length <= 20" },
+        "v":          { ".validate": "newData.isString() && newData.val().length <= 12" },
+        "at":         { ".validate": "newData.isNumber() && newData.val() <= now + 60000" },
+        "repliedAt":  { ".validate": "newData.isNumber()" },
+        "status":     { ".validate": "newData.isString() && newData.val().length < 20" },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}
+`;
+
+function cp(id, btn){
+  const t = $(id);
+  t.select(); t.setSelectionRange(0, 999999);
+  const done = () => { const o = btn.textContent; btn.textContent = '\u2713 COPIED'; setTimeout(()=>btn.textContent=o, 1600) };
+  if(navigator.clipboard){ navigator.clipboard.writeText(t.value).then(done, ()=>{document.execCommand('copy');done()}) }
+  else { document.execCommand('copy'); done() }
+}
+
+function clean(u){ return (u||'').trim().replace(/\/+$/,'') }
+
+function gen(){
+  const db = clean($('db').value), key = $('key').value.trim(), uid = $('uid').value.trim();
+  if(!/^https:\/\/.+firebase/i.test(db)){ alert('That database URL does not look right.\n\nIt should start with https:// and contain "firebase".'); return }
+  if(!/^AIza/.test(key)){ alert('That API key does not look right.\n\nFirebase web API keys start with "AIza".'); return }
+  if(uid.length < 15){ alert('That UID looks too short.\n\nCopy it from Authentication > Users, the User UID column.'); return }
+
+  $('outCfg').value =
+`/* SamuSignal Pro — configuration */
+window.SAMU_CONFIG = {
+  db: '${db}',
+  apiKey: '${key}',
+  mode: '${$('mode').value}',
+  sku: 'samusignal_pro_lifetime',
+  trialDays: 7,
+  price: '\u20b97,999'
+};`;
+
+  $('outRules').value = RULES_TPL.split('YOUR_ADMIN_UID').join(uid);
+
+  ['c2','c3','c4','c5'].forEach(x => $(x).classList.remove('hide'));
+  $('c2').scrollIntoView({behavior:'smooth'});
+}
+
+/* ---- live tests against the real database ---- */
+async function tryWrite(path, body){
+  try{
+    const r = await fetch(clean($('db').value) + '/' + path + '.json', {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    return r.ok;
+  }catch(e){ return null }
+}
+async function tryRead(path){
+  try{
+    const r = await fetch(clean($('db').value) + '/' + path + '.json', {cache:'no-store'});
+    return r.ok;
+  }catch(e){ return null }
+}
+
+async function runTests(){
+  const out = $('testOut');
+  out.innerHTML = '<div class="res">Running\u2026</div>';
+  const id = 'SETUPTEST' + Math.random().toString(36).slice(2,8).toUpperCase();
+  const now = Date.now();
+  const rows = [];
+
+  /* 1. the important one: nobody may grant themselves a licence */
+  const selfActivate = await tryWrite('devices/' + id,
+    {status:'active', createdAt:now, trialEnds:now+86400000});
+  rows.push(['Stranger cannot self-activate', selfActivate === false, selfActivate === null
+    ? 'could not reach the database' : (selfActivate ? 'THIS MUST BE FIXED \u2014 rules are not published' : 'blocked correctly')]);
+
+  /* 2. a normal device may still start its trial */
+  const startTrial = await tryWrite('devices/' + id,
+    {status:'trial', createdAt:now, trialEnds:now + 7*86400000});
+  rows.push(['Real users can start a trial', startTrial === true,
+    startTrial ? 'allowed correctly' : 'blocked \u2014 the app would not work']);
+
+  /* 3. an existing trial may not be rewritten with a longer one */
+  const extend = await tryWrite('devices/' + id,
+    {status:'trial', createdAt:now, trialEnds:now + 365*86400000});
+  rows.push(['Trial cannot be extended', extend === false,
+    extend ? 'a user could give themselves a year' : 'blocked correctly']);
+
+  /* 4. restore codes may not be pointed at your own device */
+  const fakeRestore = await tryWrite('restore/FAKECODE123', id);
+  rows.push(['Restore codes cannot be forged', fakeRestore === false,
+    fakeRestore ? 'anyone could steal a licence' : 'blocked correctly']);
+
+  /* 5. the payment queue must not be readable by strangers */
+  const readReq = await tryRead('requests');
+  rows.push(['Payment list is private', readReq === false,
+    readReq ? 'customer details are exposed' : 'blocked correctly']);
+
+  /* 6. but a user must be able to submit a payment */
+  const submit = await tryWrite('requests/' + id,
+    {deviceCode:id, name:'setup test', txn:'TEST', at:now, status:'pending'});
+  rows.push(['Users can submit a payment', submit === true,
+    submit ? 'allowed correctly' : 'blocked \u2014 nobody could pay you']);
+
+  const passed = rows.filter(r => r[1]).length;
+  const allOk = passed === rows.length;
+  const critical = rows[0][1];
+
+  out.innerHTML = '<div class="res">' + rows.map(r =>
+      `<div><span class="pill ${r[1]?'p':'f'}">${r[1]?'PASS':'FAIL'}</span>${r[0]}<br>
+       <span class="hint" style="margin:0">${r[2]}</span></div>`).join('') +
+    `<div style="border-top:1px solid var(--line);padding-top:9px;margin-top:9px">
+      <b class="${allOk?'ok':(critical?'warnT':'bad')}">${passed} / ${rows.length} passed</b><br>
+      <span class="hint" style="margin:0">${
+        allOk ? 'Your database is set up correctly. You are done here.'
+        : (critical ? 'The critical test passed, but review the failures above.'
+                    : '\u26a0 Strangers can activate themselves. Re-paste the rules and Publish again, then re-run this.')
+      }</span></div></div>`;
+
+  /* tidy up whatever the tests managed to create */
+  await fetch(clean($('db').value) + '/devices/' + id + '.json', {method:'DELETE'}).catch(()=>{});
+  await fetch(clean($('db').value) + '/requests/' + id + '.json', {method:'DELETE'}).catch(()=>{});
+}
+</script>
+</body>
+</html>

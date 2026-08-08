@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SamuSignal Pro">
 <link rel="manifest" href="./manifest.json">
+<script src="./config.js"></script>
 <link rel="apple-touch-icon" href="./icon-192.png">
 <link rel="icon" type="image/png" href="./favicon.png">
 <style>
@@ -1094,7 +1095,7 @@ body.t-navy{
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '8.0.0';
+const VERSION = '8.1.0';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -5115,16 +5116,16 @@ function renderTrack(){
    ============================================================ */
 
 /* ---- CONFIG: fill these in from your own Firebase project ---- */
+/* Everything configurable lives in config.js, so you only ever edit one
+   small file. If that file is missing the app still runs, in local trial
+   mode, which is handy for testing. */
+const CFGF = (typeof window !== 'undefined' && window.SAMU_CONFIG) || {};
 const LIC = {
-  /* Realtime Database URL, e.g. https://samusignal-pro-default-rtdb.firebaseio.com */
-  db:   'PASTE_YOUR_FIREBASE_DB_URL_HERE',
-  /* 'play'   -> unlock through Google Play Billing (Play Store build)
-     'direct' -> UPI QR + manual activation (APK build)         */
-  mode: 'direct',
-  /* Play Console in-app product ID, only used when mode === 'play' */
-  sku:  'samusignal_pro_lifetime',
-  trialDays: 7,
-  price: '\u20b97,999'
+  db:   CFGF.db   || 'PASTE_YOUR_FIREBASE_DB_URL_HERE',
+  mode: CFGF.mode || 'direct',
+  sku:  CFGF.sku  || 'samusignal_pro_lifetime',
+  trialDays: CFGF.trialDays || 7,
+  price: CFGF.price || '\u20b97,999'
 };
 
 const LICS = {

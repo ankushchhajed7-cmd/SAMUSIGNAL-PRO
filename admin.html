@@ -7,6 +7,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#03100e">
 <link rel="icon" href="./favicon.png">
+<script src="./config.js"></script>
 <style>
 :root{
   --bg:#03100e; --card:#08201c; --line:#12463c; --txt:#e8f5f1;
@@ -106,9 +107,10 @@ button.sm{padding:8px;font-size:11px;width:auto;margin:0}
    CONFIG — paste the same values you put in index.html, plus the
    Web API key from Firebase console > Project settings > General.
    --------------------------------------------------------------- */
+const _C = window.SAMU_CONFIG || {};
 const CFG = {
-  db:     'PASTE_YOUR_FIREBASE_DB_URL_HERE',
-  apiKey: 'PASTE_YOUR_FIREBASE_WEB_API_KEY_HERE'
+  db:     _C.db     || 'PASTE_YOUR_FIREBASE_DB_URL_HERE',
+  apiKey: _C.apiKey || 'PASTE_YOUR_FIREBASE_WEB_API_KEY_HERE'
 };
 
 const $ = id => document.getElementById(id);

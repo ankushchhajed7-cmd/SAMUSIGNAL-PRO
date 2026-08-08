@@ -10,13 +10,14 @@
        -> never cached, always straight to the network.
    ================================================================== */
 
-const VERSION = '8.0.0';
+const VERSION = '8.1.0';
 const CACHE   = 'samusignal-pro-v' + VERSION.replace(/\./g, '-');
 
 const SHELL = [
   './',
   './index.html',
   './manifest.json',
+  './config.js',
   './icon-192.png',
   './icon-512.png',
   './icon-512-maskable.png',
