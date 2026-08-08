@@ -15,7 +15,8 @@
 <style>
 :root{
   --bg:#0d0d0d; --panel:#141414; --panel2:#0d0d0d; --line:#2a2a2a;
-  --txt:#f5f5f5; --mut:#c6d2de; --dim:#a9b6c4;
+  --txt:#f5f5f5; --mut:#a8f0d4; --dim:#8fe0c2;
+  --shineA:#00FF96; --shineB:#7dffcb; --shineHi:#ffffff;
   --lbl:#8fd4ff;
   --up:#00FF96; --dn:#FF4444; --gold:#FFB800; --blue:#00CCFF;
   --r:8px;
@@ -61,10 +62,34 @@ header{
 main{padding:0 12px 20px;max-width:600px;margin:0 auto}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
   padding:14px;margin-bottom:14px}
-.ttl{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);text-shadow:0 0 10px rgba(255,184,0,.3);
-  margin:0 0 12px;font-weight:700;display:flex;align-items:center;gap:8px}
+.ttl{font-size:13px;letter-spacing:2px;text-transform:uppercase;
+  margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px;
+  color:var(--shineA);
+  background-image:linear-gradient(100deg,
+    var(--shineA) 0%, var(--shineA) 36%,
+    var(--shineB) 46%, var(--shineHi) 51%, var(--shineB) 56%,
+    var(--shineA) 66%, var(--shineA) 100%);
+  background-size:220% 100%;
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:mirror 5.5s ease-in-out infinite;
+  filter:drop-shadow(0 0 8px rgba(0,255,150,.30));}
+body.lux .ttl{filter:drop-shadow(0 0 8px rgba(var(--accRGB),.35))}
+body.t-emerald .ttl{filter:drop-shadow(0 0 8px rgba(20,180,150,.40))}
+body.t-royal .ttl{filter:drop-shadow(0 0 8px rgba(150,60,220,.40))}
+/* the right-hand status chip must stay solid, not swept */
+.ttl .sp{-webkit-text-fill-color:var(--lbl)}
+/* buttons inside a title keep their own colour (RESET is red, etc.) */
+.ttl button,.ttl .sp button{-webkit-text-fill-color:currentColor}
+/* a title given its own inline colour (e.g. the red "out of credits" header)
+   must opt out of the sweep, otherwise the gradient would hide it */
+.ttl[style*="color:"]{background-image:none;-webkit-text-fill-color:currentColor;
+  animation:none;filter:none;text-shadow:0 0 10px currentColor}
+/* same for a status chip that carries its own colour */
+.ttl .sp[style*="color:"]{-webkit-text-fill-color:currentColor}
+@media (prefers-reduced-motion:reduce){.ttl{animation:none}}
 .ttl .sp{margin-left:auto;font-weight:700;letter-spacing:0;text-transform:none;
-  color:var(--lbl);font-size:10px;opacity:.85}
+  color:var(--lbl);font-size:11.5px;opacity:1}
 label{display:block;font-size:11.5px;font-weight:700;color:var(--lbl);letter-spacing:1px;margin-bottom:6px;
   font-weight:700;text-transform:uppercase;text-shadow:0 0 8px rgba(143,212,255,.35)}
 input,select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;
@@ -121,7 +146,7 @@ input:focus,select:focus{border-color:var(--gold)}
   border-radius:50%;background:var(--dim);transition:.18s}
 .sw.on .tg{background:rgba(0,255,150,.2);border-color:var(--up)}
 .sw.on .tg::after{transform:translateX(19px);background:var(--up)}
-.sw div{font-size:13px;font-weight:700} .sw small{color:var(--mut);font-size:11.5px;font-weight:600;display:block;margin-top:3px;line-height:1.55}
+.sw div{font-size:13.5px;font-weight:800} .sw small{color:var(--mut);font-size:12px;font-weight:700;display:block;margin-top:3px;line-height:1.6}
 
 /* ---------- signal ---------- */
 .sig{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:13px}
@@ -179,7 +204,7 @@ th{text-align:left;font-size:10.5px;color:var(--lbl);letter-spacing:1px;text-tra
   padding:0 0 8px;font-weight:700;border-bottom:1px solid var(--line)}
 td{padding:9px 0;border-bottom:1px solid #1a1a1a}
 tr:last-child td{border-bottom:none}
-.up{color:var(--up);text-shadow:0 0 8px rgba(0,255,150,.35)} .dn{color:var(--dn);text-shadow:0 0 8px rgba(255,68,68,.35)} .mu{color:var(--mut);font-weight:600}
+.up{color:var(--up);text-shadow:0 0 8px rgba(0,255,150,.35)} .dn{color:var(--dn);text-shadow:0 0 8px rgba(255,68,68,.35)} .mu{color:var(--mut);font-weight:700}
 
 /* ---------- trades ---------- */
 .tr{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:10px}
@@ -201,7 +226,7 @@ tr:last-child td{border-bottom:none}
 .pb{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px 4px;text-align:center}
 .pb b{display:block;font-size:19px;line-height:1.1}
 .pb span{display:block;font-size:10px;color:var(--lbl);letter-spacing:1.2px;font-weight:700;margin-top:5px}
-.pb em{display:block;font-style:normal;font-size:10.5px;font-weight:600;color:var(--mut);margin-top:4px;letter-spacing:.2px}
+.pb em{display:block;font-style:normal;font-size:11px;font-weight:700;color:var(--mut);margin-top:4px;letter-spacing:.2px}
 .ptot{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:16px;text-align:center}
 .ptot b{display:block;font-size:27px;line-height:1}
 .ptot span{display:block;font-size:10.5px;color:var(--lbl);letter-spacing:1.6px;font-weight:700;margin-top:6px}
@@ -243,6 +268,8 @@ tr:last-child td{border-bottom:none}
   background-image:linear-gradient(100deg,var(--up) 0%,var(--up) 38%,#dffff0 48%,#ffffff 52%,var(--up) 62%,var(--up) 100%)}
 .shine.dn{color:var(--dn);-webkit-text-fill-color:transparent;
   background-image:linear-gradient(100deg,var(--dn) 0%,var(--dn) 38%,#ffe3e3 48%,#ffffff 52%,var(--dn) 62%,var(--dn) 100%)}
+.shine.gr2{color:var(--up);-webkit-text-fill-color:transparent;
+  background-image:linear-gradient(100deg,var(--up) 0%,var(--up) 38%,#dffff0 48%,#ffffff 52%,var(--up) 62%,var(--up) 100%)}
 .shine.gd{color:var(--gold);-webkit-text-fill-color:transparent;
   background-image:linear-gradient(100deg,var(--gold) 0%,var(--gold) 38%,#fff2cc 48%,#ffffff 52%,var(--gold) 62%,var(--gold) 100%)}
 @media (prefers-reduced-motion:reduce){.shine{animation:none}}
@@ -274,7 +301,7 @@ tr:last-child td{border-bottom:none}
 .an .up2{font-weight:800;color:var(--up);text-shadow:0 0 8px currentColor}
 .an .dn2{font-weight:800;color:var(--dn);text-shadow:0 0 8px currentColor}
 
-.empty{text-align:center;padding:26px 12px;color:var(--mut);font-size:13px;font-weight:600;line-height:1.7}
+.empty{text-align:center;padding:26px 12px;color:var(--mut);font-size:13.5px;font-weight:700;line-height:1.75}
 .empty div{font-size:30px;margin-bottom:8px;opacity:.4}
 
 /* ---------- nav ---------- */
@@ -297,7 +324,7 @@ nav button.on{color:var(--gold);text-shadow:0 0 10px rgba(255,184,0,.6)} nav but
 .sh-h{display:flex;align-items:center;margin-bottom:14px}
 .sh-h h3{margin:0;font-size:15px;color:var(--gold);letter-spacing:2px;text-transform:uppercase}
 .sh-h button{margin-left:auto;font-size:22px;color:var(--mut);padding:0 6px}
-.hint{font-size:12px;font-weight:600;color:var(--mut);margin:7px 0 0;line-height:1.7;letter-spacing:.1px}
+.hint{font-size:12.5px;font-weight:700;color:var(--mut);margin:7px 0 0;line-height:1.72;letter-spacing:.2px}
 .hint a{color:var(--blue)}
 
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;z-index:200;
@@ -332,12 +359,13 @@ nav button.on{color:var(--gold);text-shadow:0 0 10px rgba(255,184,0,.6)} nav but
 .hist .ic.m{background:rgba(119,119,119,.15);color:var(--mut);border:1px solid var(--line)}
 .hist .in{flex:1;min-width:0}
 .hist .in b{font-size:12px;display:block}
-.hist .in small{color:var(--mut);font-size:11.5px;font-weight:600}
+.hist .in small{color:var(--mut);font-size:12px;font-weight:700}
 .hist .amt{font-size:13px;font-weight:700}
 
 /* ==================== GOLD THEME ==================== */
 body.lux{
   --txt:#f8f1e2; --mut:#d8c49a; --dim:#c2ab7c; --lbl:#f0d68a;
+  --shineA:#e8c063; --shineB:#fbecc0; --shineHi:#ffffff;
   --up:#2ee88a; --dn:#ff5a5a; --gold:#e8c063; --blue:#e8c063;
   --accRGB:212,163,60;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
@@ -364,12 +392,8 @@ body.lux .hbox h1{
   text-shadow:none; filter:drop-shadow(0 2px 6px rgba(var(--accRGB),.45));
 }
 body.lux .hbox p{color:#c9ad72;letter-spacing:1.6px;font-size:9.5px}
-body.lux .ttl{
-  background:linear-gradient(180deg,#fbecc0,#d9b055);
-  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
-  text-shadow:none; letter-spacing:1.6px; font-size:13px;
-}
-body.lux .ttl .sp{-webkit-text-fill-color:#b09b6f;color:#b09b6f}
+body.lux .ttl{letter-spacing:1.6px; font-size:13.5px}
+body.lux .ttl .sp{-webkit-text-fill-color:#e0c68d;color:#e0c68d}
 body.lux label{color:#c9ad72;text-shadow:none;letter-spacing:1.2px}
 
 body.lux .ib,body.lux .chip,body.lux .pick,body.lux input,body.lux select,
@@ -453,6 +477,7 @@ body.t-gold{
   --pT:#231703; --pG:rgba(200,150,40,.30);
 }
 body.t-emerald{
+  --shineA:#3fc9ab; --shineB:#8ff0dc; --shineHi:#eafffa;
   --bg:#03100e; --panel:#08201c; --panel2:#051512; --line:#12463c;
   --accRGB:212,175,80;
   --g1:rgba(20,180,150,.16); --g2:rgba(212,163,60,.10); --g3:rgba(10,120,100,.12);
@@ -462,6 +487,7 @@ body.t-emerald{
   --pT:#02201b; --pG:rgba(20,180,150,.30);
 }
 body.t-royal{
+  --shineA:#c274ee; --shineB:#e5b3ff; --shineHi:#faf0ff;
   --bg:#0d0413; --panel:#1a0a26; --panel2:#0f0518; --line:#3f1c58;
   --accRGB:222,176,70;
   --g1:rgba(150,60,220,.18); --g2:rgba(212,163,60,.10); --g3:rgba(95,30,150,.14);
@@ -471,6 +497,7 @@ body.t-royal{
   --pT:#1b0628; --pG:rgba(150,60,220,.32);
 }
 body.t-navy{
+  --shineA:#eccd77; --shineB:#fbeaae; --shineHi:#fffaea;
   --bg:#020a1c; --panel:#06152f; --panel2:#040e22; --line:#123163;
   --accRGB:224,178,64;
   --g1:rgba(30,90,200,.18); --g2:rgba(224,178,64,.11); --g3:rgba(15,50,130,.14);
@@ -923,7 +950,7 @@ body.t-navy{
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '7.1.1';
+const VERSION = '7.2.0';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
