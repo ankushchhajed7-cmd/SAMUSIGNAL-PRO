@@ -10,7 +10,7 @@
        -> never cached, always straight to the network.
    ================================================================== */
 
-const VERSION = '7.3.0';
+const VERSION = '8.0.0';
 const CACHE   = 'samusignal-pro-v' + VERSION.replace(/\./g, '-');
 
 const SHELL = [
@@ -22,7 +22,10 @@ const SHELL = [
   './icon-512-maskable.png',
   './favicon.png',
   './404.html',
-  './privacy.html'
+  './privacy.html',
+  './guide-en.pdf',
+  './guide-hi.pdf',
+  './pay-qr.png'
 ];
 
 /* Hosts we must never serve from cache — stale prices are worse than none. */
