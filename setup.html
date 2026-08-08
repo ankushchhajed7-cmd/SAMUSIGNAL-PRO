@@ -55,7 +55,13 @@ li{margin-bottom:6px}
   <div class="card">
     <p class="step"><span class="num">1</span>Paste your three values</p>
     <label>Firebase Database URL</label>
-    <input id="db" placeholder="https://samusignal-pro-default-rtdb....firebasedatabase.app">
+    <div style="display:flex;gap:7px">
+      <input id="proj" placeholder="project id, e.g. samusignal-pro" style="flex:1">
+      <button onclick="findDb()" style="width:auto;margin:0;padding:11px 13px;white-space:nowrap">FIND</button>
+    </div>
+    <p class="hint" style="margin:6px 0 0">Don't know the URL? Type your project id above and tap FIND — it will locate the database for you.</p>
+    <div id="findOut"></div>
+    <input id="db" style="margin-top:8px" placeholder="https://....firebasedatabase.app">
     <label>Firebase Web API key</label>
     <input id="key" placeholder="AIzaSy...">
     <label>Your admin User UID</label>
@@ -216,9 +222,66 @@ function cp(id, btn){
 
 function clean(u){ return (u||'').trim().replace(/\/+$/,'') }
 
+/* Realtime Database lives on a different host per region, and there is no way
+   to know which one from the project id alone. So we simply try them all.
+   A locked database answers 401 "Permission denied" — that still proves it
+   exists, which is exactly what we want to know. */
+const RTDB_HOSTS = [
+  p => `https://${p}-default-rtdb.firebaseio.com`,
+  p => `https://${p}-default-rtdb.asia-southeast1.firebasedatabase.app`,
+  p => `https://${p}-default-rtdb.europe-west1.firebasedatabase.app`,
+  p => `https://${p}-default-rtdb.asia-south1.firebasedatabase.app`,
+  p => `https://${p}-default-rtdb.us-central1.firebasedatabase.app`
+];
+
+async function probe(url){
+  try{
+    const r = await fetch(url + '/.json?shallow=true', {cache:'no-store'});
+    /* 401 = exists but locked (correct), 200 = exists and open (rules not published yet) */
+    if(r.status === 401 || r.status === 200) return r.status;
+    return 0;
+  }catch(e){ return 0 }
+}
+
+async function findDb(){
+  let p = $('proj').value.trim().toLowerCase();
+  if(!p){ alert('Type your project id first, for example samusignal-pro'); return }
+  /* accept a pasted console URL and pull the project id out of it */
+  const m = /project\/([\w-]+)/.exec(p) || /^https?:\/\/([\w-]+)-default-rtdb/.exec(p);
+  if(m) p = m[1];
+  p = p.replace(/[^a-z0-9-]/g, '');
+
+  const out = $('findOut');
+  out.innerHTML = '<div class="res">Searching\u2026</div>';
+  for(const mk of RTDB_HOSTS){
+    const url = mk(p);
+    const st = await probe(url);
+    if(st){
+      $('db').value = url;
+      out.innerHTML = `<div class="res"><span class="pill p">FOUND</span>
+        <span class="hint" style="margin:0;word-break:break-all">${url}</span>` +
+        (st === 200 ? `<div class="hint" style="margin:7px 0 0;color:var(--warn)">\u26a0 This database is currently wide open. That is expected before you publish the rules in step 3.</div>` : '') +
+        `</div>`;
+      return;
+    }
+  }
+  out.innerHTML = `<div class="res"><span class="pill f">NOT FOUND</span>
+    <span class="hint" style="margin:0">No database answered for "${p}".<br><br>
+    Check the project id spelling, and make sure you created the Realtime Database
+    (not Firestore). You can also copy the URL straight from the Data tab in the
+    Firebase console and paste it into the box below.</span></div>`;
+}
+
 function gen(){
   const db = clean($('db').value), key = $('key').value.trim(), uid = $('uid').value.trim();
-  if(!/^https:\/\/.+firebase/i.test(db)){ alert('That database URL does not look right.\n\nIt should start with https:// and contain "firebase".'); return }
+  if(/console\.firebase\.google\.com/i.test(db)){
+    alert('That is the Firebase console address, not your database.\n\nThe database URL ends in .firebasedatabase.app or .firebaseio.com\n\nType your project id above and tap FIND, and it will fill this in for you.');
+    return;
+  }
+  if(!/^https:\/\/.+(firebasedatabase\.app|firebaseio\.com)/i.test(db)){
+    alert('That database URL does not look right.\n\nIt should end in .firebasedatabase.app or .firebaseio.com\n\nTap FIND above to locate it automatically.');
+    return;
+  }
   if(!/^AIza/.test(key)){ alert('That API key does not look right.\n\nFirebase web API keys start with "AIza".'); return }
   if(uid.length < 15){ alert('That UID looks too short.\n\nCopy it from Authentication > Users, the User UID column.'); return }
 
