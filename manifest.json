@@ -1,0 +1,53 @@
+{
+  "name": "SamuSignal Pro",
+  "short_name": "SamuSignal",
+  "description": "AI-powered forex and gold signal analysis with a 50-agent voting engine, multi-pair scanner, backtesting and a personal trade journal.",
+  "id": "/SAMUSIGNAL-PRO/",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#03100e",
+  "theme_color": "#03100e",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["finance", "business", "productivity"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Run Scanner",
+      "short_name": "Scan",
+      "description": "Scan your watchlist for setups",
+      "url": "./index.html#scan",
+      "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Trades",
+      "short_name": "Trades",
+      "description": "Open the trade journal",
+      "url": "./index.html#trades",
+      "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

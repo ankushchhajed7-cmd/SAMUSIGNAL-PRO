@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SamuSignal Pro</title>
+<meta name="theme-color" content="#03100e">
+<link rel="icon" href="./favicon.png">
+<style>
+  html,body{margin:0;height:100%}
+  body{
+    background:#03100e; color:#8ff0dc;
+    font-family:'Courier New', Courier, monospace;
+    display:flex; align-items:center; justify-content:center;
+    padding:24px; text-align:center;
+  }
+  .box{
+    max-width:420px; width:100%;
+    background:#08201c; border:1px solid #12463c; border-radius:8px;
+    padding:28px 22px;
+  }
+  h1{margin:0 0 6px; font-size:18px; letter-spacing:2.5px; color:#3fc9ab; font-weight:700}
+  .code{font-size:44px; font-weight:700; color:#149e83; margin:6px 0 10px; letter-spacing:3px}
+  p{margin:0 0 18px; font-size:13px; line-height:1.6; color:#6fbfaa}
+  a{
+    display:block; padding:12px; border:1px solid #3fc9ab; border-radius:6px;
+    color:#8ff0dc; text-decoration:none; font-size:12px;
+    letter-spacing:1.5px; font-weight:700;
+  }
+  a:active{background:rgba(63,201,171,.12)}
+  small{display:block; margin-top:16px; font-size:10px; color:#3d6b60; letter-spacing:.5px}
+</style>
+</head>
+<body>
+  <div class="box">
+    <h1>SAMUSIGNAL PRO</h1>
+    <div class="code">404</div>
+    <p>That page doesn't exist. Everything lives inside the app itself.</p>
+    <a href="./index.html">OPEN THE APP</a>
+    <small>Redirecting automatically…</small>
+  </div>
+<script>
+  setTimeout(function(){ location.replace('./index.html'); }, 2500);
+</script>
+</body>
+</html>
