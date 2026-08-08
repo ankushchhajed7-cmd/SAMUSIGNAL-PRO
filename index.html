@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>SamuSignal Pro</title>
 <meta name="description" content="SamuSignal Pro — AI-powered forex and gold signal analysis, scanner and trade journal.">
-<meta name="theme-color" content="#0d0d0d">
+<meta name="theme-color" content="#03100e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SamuSignal Pro">
@@ -508,7 +508,29 @@ body.t-navy{
 }
 </style>
 </head>
-<body>
+<body class="lux t-emerald">
+<script>
+/* Apply the saved theme to <body> before anything paints, so the app never
+   flashes the default palette. boot() re-runs this properly a moment later. */
+(function(){
+  var t = 'emerald';
+  /* read separately: a corrupted value must not skip the paint below */
+  try{
+    var raw = localStorage.getItem('samu_theme');
+    if(raw) t = JSON.parse(raw);
+  }catch(e){}
+  if(!{terminal:1, gold:1, emerald:1, royal:1, navy:1}[t]) t = 'emerald';
+  var bg = {terminal:'#0d0d0d', gold:'#0a0704', emerald:'#03100e',
+            royal:'#0d0413', navy:'#020a1c'}[t];
+  try{
+    var b = document.body;
+    b.className = (t === 'terminal') ? '' : 'lux t-' + t;
+    b.style.background = bg;
+    var m = document.querySelector('meta[name="theme-color"]');
+    if(m) m.setAttribute('content', bg);
+  }catch(e){}
+})();
+</script>
 
 <header>
   <div class="hbox">
@@ -950,7 +972,7 @@ body.t-navy{
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '7.2.0';
+const VERSION = '7.3.0';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -1103,7 +1125,7 @@ let S = {
   scanDeep: LS.get('scanDeep',false),
   scanMin: LS.get('scanMin',70),
   scan:  LS.get('scan',{at:0,rows:[]}),
-  theme: LS.get('theme','terminal'),
+  theme: LS.get('theme','emerald'),
   gKey:  LS.get('gKey',''),
   gModel: LS.get('gModel',''),
   gBad: LS.get('gBad',[]),
@@ -1124,6 +1146,14 @@ let S = {
 };
 function save(){ ['key','tf','pair','lots','htf','tgTok','tgId','tgAuto','dTp','dSl','dLot','slMode','atrSL','atrRR','autoLot','riskUsd','chartTf','mktG','minPips','symMap','symDef','theme','gKey','gModel','gBad','gAuto','agLive','bt','btBars','btFwd','cap','autoM','day','corr','news','newsMin','newsOn','newsImp','sigs','watch','scanDeep','scanMin','scan','notif','tts','bad','px','open','hist','style','shot','track','trackMin'].forEach(k=>LS.set(k,S[k])); }
 
+/* v7.3: Emerald is the new default. Move devices that were still on the
+   original default across, once, without overriding a deliberate choice. */
+if(!LS.get('mig73', false)){
+  if(!LS.get('themePicked', false) && S.theme === 'terminal'){
+    S.theme = 'emerald'; LS.set('theme', 'emerald');
+  }
+  LS.set('mig73', true);
+}
 if(!LS.get('mig21', false)){ S.dTp = 1; S.dSl = 2.5; LS.set('mig21', true); LS.set('dTp',1); LS.set('dSl',2.5); }
 
 let lastSignal = null;
@@ -1563,8 +1593,9 @@ const THEMES = {
   navy:     {n:'Navy',      bg:'#020a1c'}
 };
 function applyTheme(){
-  const t = THEMES[S.theme] ? S.theme : 'terminal';
+  const t = THEMES[S.theme] ? S.theme : 'emerald';
   const b = document.body;
+  b.style.background = '';   /* drop the pre-paint inline colour */
   b.className = b.className.replace(/\bt-\S+|\blux\b/g,'').trim();
   if(t !== 'terminal') b.classList.add('lux', 't-' + t);
   const m = document.querySelector('meta[name="theme-color"]');
@@ -1572,9 +1603,9 @@ function applyTheme(){
   requestAnimationFrame(() => { paintSignalChart(); paintTradeCharts() });
 }
 function setTheme(t){
-  S.theme = t; save(); applyTheme();
+  S.theme = t; LS.set('themePicked', true); save(); applyTheme();
   document.querySelectorAll('[data-th]').forEach(b => b.classList.toggle('on', b.dataset.th === t));
-  toast((THEMES[t]||THEMES.terminal).n + ' theme on');
+  toast((THEMES[t]||THEMES.emerald).n + ' theme on');
 }
 function toggleSw(el,key){ S[key]=!S[key]; el.classList.toggle('on',S[key]); save(); }
 
@@ -1653,7 +1684,7 @@ function waitFor(n){
 function showCredits(){
   const l = creditsLeft();
   const el = $('apiState');
-  if(el && S.key) el.textContent = `${l}/${LIMIT} min · ${dayLeft()} aaj`;
+  if(el && S.key) el.textContent = `${l}/${LIMIT} min · ${dayLeft()} today`;
 }
 setInterval(showCredits, 3000);
 
@@ -5187,6 +5218,7 @@ function unlockAll(){
   S.bad = []; save(); fillPairs(); toast('Locked pairs reset — try again');
 }
 function boot(){
+  applyTheme();
   fillPairs();
   $('inLots').value = S.lots;
   $('inLots').onchange = e => { S.lots = +e.target.value||0.01; save() };
