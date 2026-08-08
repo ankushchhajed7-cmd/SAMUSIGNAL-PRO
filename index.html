@@ -690,6 +690,29 @@ body.t-navy{
   </div>
 
   <div class="card">
+    <p class="ttl">Chart Analysis <span class="sp" id="shotState">upload a screenshot</span></p>
+
+    <label>Trading style</label>
+    <div class="chips" style="margin-bottom:12px">
+      <button class="chip" id="mdScalp" onclick="setStyle('SCALP')">Scalping</button>
+      <button class="chip" id="mdDay"   onclick="setStyle('DAY')">Day</button>
+      <button class="chip" id="mdSwing" onclick="setStyle('SWING')">Swing</button>
+    </div>
+    <p class="hint" id="styleNote" style="margin:-4px 0 12px">—</p>
+
+    <button class="btn gold" onclick="shotIn.click()">🖼 UPLOAD CHART SCREENSHOT</button>
+    <input type="file" id="shotIn" accept="image/*" class="hide">
+    <p class="hint" style="margin:8px 0 0">Pick a clean chart screenshot from your gallery. Make sure the price axis and the pair name are readable.</p>
+
+    <div id="shotBox" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <p class="ttl">Live Tracking <span class="sp" id="trackState">off</span></p>
+    <div id="trackBox"></div>
+  </div>
+
+  <div class="card">
     <p class="ttl">Data &amp; Backup</p>
     <p class="hint" id="storeInfo" style="margin:0 0 12px">—</p>
     <button class="btn gold sm" style="margin-bottom:14px" onclick="fixStorage()">🔒 PROTECT MY DATA</button>
@@ -702,10 +725,6 @@ body.t-navy{
     <p class="hint">All your data stays on this device only. Export a backup file regularly and keep it safe — reinstalling the app clears everything.</p>
   </div>
 
-  <div class="card">
-    <p class="ttl">Alert Log</p>
-    <div id="logBox"><p class="hint">No alerts yet.</p></div>
-  </div>
 </section>
 
 </main>
@@ -777,6 +796,15 @@ body.t-navy{
     </select></div>
   </div>
   <p class="hint" style="margin-bottom:14px">The free plan gives 800 credits/day. Keep the cap at 700 so you always have a buffer. Each open pair costs 1 credit per refresh — 5 pairs on a 5-minute refresh is about 60 credits/hour.</p>
+
+  <p class="ttl">Chart Tracking</p>
+  <div style="margin-bottom:10px"><label>Check price every</label><select id="setTrackMin">
+    <option value="2">2 minutes</option>
+    <option value="5">5 minutes</option>
+    <option value="10">10 minutes</option>
+    <option value="15">15 minutes</option>
+  </select></div>
+  <p class="hint" style="margin-bottom:16px">Tracking costs 1 API credit per check and only runs while the app is open. A 5-minute check uses roughly 12 credits per hour.</p>
 
   <p class="ttl">Alerts &amp; Voice</p>
   <div class="sw" id="swNotif" onclick="toggleNotif(this)">
@@ -895,7 +923,7 @@ body.t-navy{
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '7.0.0';
+const VERSION = '7.1.0';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -1062,9 +1090,12 @@ let S = {
   px:    LS.get('px',{}),
   open:  LS.get('open',[]),
   hist:  LS.get('hist',[]),
-  log:   LS.get('log',[])
+  style: LS.get('style','DAY'),        /* SCALP | DAY | SWING */
+  shot:  LS.get('shot',null),          /* last chart analysis result */
+  track: LS.get('track',null),         /* active setup being tracked */
+  trackMin: LS.get('trackMin',5)       /* minutes between price checks */
 };
-function save(){ ['key','tf','pair','lots','htf','tgTok','tgId','tgAuto','dTp','dSl','dLot','slMode','atrSL','atrRR','autoLot','riskUsd','chartTf','mktG','minPips','symMap','symDef','theme','gKey','gModel','gBad','gAuto','agLive','bt','btBars','btFwd','cap','autoM','day','corr','news','newsMin','newsOn','newsImp','sigs','watch','scanDeep','scanMin','scan','notif','tts','bad','px','open','hist','log'].forEach(k=>LS.set(k,S[k])); }
+function save(){ ['key','tf','pair','lots','htf','tgTok','tgId','tgAuto','dTp','dSl','dLot','slMode','atrSL','atrRR','autoLot','riskUsd','chartTf','mktG','minPips','symMap','symDef','theme','gKey','gModel','gBad','gAuto','agLive','bt','btBars','btFwd','cap','autoM','day','corr','news','newsMin','newsOn','newsImp','sigs','watch','scanDeep','scanMin','scan','notif','tts','bad','px','open','hist','style','shot','track','trackMin'].forEach(k=>LS.set(k,S[k])); }
 
 if(!LS.get('mig21', false)){ S.dTp = 1; S.dSl = 2.5; LS.set('mig21', true); LS.set('dTp',1); LS.set('dSl',2.5); }
 
@@ -1488,7 +1519,7 @@ function go(pg,btn){
     $('btTf').textContent = S.tf; $('btT').innerHTML = S.bt ? `<span data-ago="${S.bt.at}">${ago(S.bt.at)}</span>` : '—' }
   if(pg==='Market' && !mktLoaded){ mktLoaded = true; loadMarket(); }
   if(pg==='Trades'){ renderTrades(); refreshOpen(false) }
-  if(pg==='Alerts'){ renderLog(); renderStorage() }
+  if(pg==='Alerts'){ renderStorage(); renderShot(); renderTrack() }
 }
 async function toggleNotif(el){
   if(!S.notif){
@@ -1721,7 +1752,6 @@ async function getQuotes(syms, note, ttl){
     S.px[k] = { p: out[k].p, chg: out[k].chg, t: now };
   }
   stamp();
-  if(failed.length) logAdd('No rate for: ' + failed.join(', '));
   if(!Object.keys(out).length) throw new Error('The API returned no rates — ' + (failed[0] || 'reason unknown'));
   /* diagnostics — key is hidden so no loop mistakes it for a pair */
   Object.defineProperty(out, '__failed', {value: failed, enumerable: false});
@@ -3694,7 +3724,6 @@ function addTrade(t){
   S.open.push(t); save();
   renderTrades(); go('Trades', document.querySelector('nav button[data-pg="Trades"]'));
   toast(`Added to journal — ${t.dir} ${t.sym} @ ${fmt(t.sym,t.entry)}`);
-  logAdd(`Trade open: ${t.dir} ${t.sym} @ ${fmt(t.sym,t.entry)}`);
   if(S.tgAuto) tgSend(tradeText(t,'OPEN'), true);
 }
 
@@ -3719,7 +3748,6 @@ function closeTrade(id, reason){
       `${t.dir} ${t.lots} lot · ${money(pl)}`, 'close');
     if(S.tts) speak(`${SPECS[t.sym].n.split('').join(' ')} ${reason==='TP'?'target hit':'stop loss hit'}. ${pl>=0?'Profit':'Loss'} ${Math.abs(pl).toFixed(2)} dollars.`);
   }
-  logAdd(`${word} — ${t.sym} ${money(pl)}`);
   if(S.tgAuto) tgSend(tradeText(rec, reason), true);
 }
 function closeManualBtn(id){ if(confirm('Close this trade?')) closeTrade(id,'MANUAL') }
@@ -3772,7 +3800,7 @@ async function refreshOpen(force){
     paintSignalChart();
     if(force){
       const bad = (q.__failed||[]).length;
-      toast(bad ? `${okCount} updated, ${bad} failed — see the log under Alerts` : `Rates updated for ${okCount} trades`);
+      toast(bad ? `${okCount} updated, ${bad} failed` : `Rates updated for ${okCount} trades`);
     }
     hits.forEach(([id,r])=>closeTrade(id,r));
   }catch(e){
@@ -4366,9 +4394,9 @@ async function tgSend(text, silentFail){
       body: JSON.stringify({chat_id:S.tgId, text, parse_mode:'HTML', disable_web_page_preview:true})
     });
     const j = await r.json();
-    if(j.ok){ logAdd('Sent to Telegram: ' + strip(text).split('\n')[0]); if(!silentFail) toast('Sent to Telegram') }
-    else { logAdd('Telegram fail: ' + (j.description||'')); if(!silentFail) toast('Telegram error: ' + (j.description||'')) }
-  }catch(e){ logAdd('Telegram failed: ' + e.message); if(!silentFail) toast('Telegram send failed — check your connection') }
+    if(j.ok){ if(!silentFail) toast('Sent to Telegram') }
+    else if(!silentFail) toast('Telegram error: ' + (j.description||''));
+  }catch(e){ if(!silentFail) toast('Telegram send failed — check your connection') }
 }
 function saveTg(){
   S.tgTok = $('tgTok').value.trim(); S.tgId = $('tgId').value.trim(); save();
@@ -4378,14 +4406,520 @@ function testTg(){
   S.tgTok = $('tgTok').value.trim(); S.tgId = $('tgId').value.trim(); save();
   tgSend(`📡 <b>SamuSignal Pro</b> connected!\n\nSignal and trade alerts will arrive here.\n⏰ ${t12(Date.now())}`);
 }
-function logAdd(m){
-  S.log.unshift({t:Date.now(), m}); S.log = S.log.slice(0,80); save();
-  if(!$('pgAlerts').classList.contains('hide')) renderLog();
+
+
+/* ================= CHART SCREENSHOT ANALYSIS =================
+   The user uploads a chart image; Gemini Vision reads the levels off it.
+   The levels come from the picture, not from live data, so everything
+   is presented as "verify against live price" until tracking confirms it. */
+
+const STYLES = {
+  SCALP: {
+    label: 'Scalping',
+    note:  'Minutes to a few hours. Tight stops, quick targets, M1\u2013M15 structure.',
+    brief: 'SCALPING: hold for minutes up to a couple of hours. Read the lowest visible timeframe structure. Keep the stop tight and the first target close \u2014 aim for roughly 1:1 to 1:1.5 reward.'
+  },
+  DAY: {
+    label: 'Day trading',
+    note:  'Intraday. Enter and exit within the session, M15\u2013H1 structure.',
+    brief: 'DAY TRADING: enter and exit within the same session. Work from the intraday structure. Target roughly 1:1.5 to 1:2 reward, with the stop behind the nearest clear swing.'
+  },
+  SWING: {
+    label: 'Swing trading',
+    note:  'Days to weeks. Wide stops behind major structure, larger targets.',
+    brief: 'SWING TRADING: hold for days or weeks. Work from the major swing structure. Place the stop behind a significant high or low and target roughly 1:2 to 1:3 reward.'
+  }
+};
+
+function setStyle(k){
+  if(!STYLES[k]) return;
+  S.style = k; save(); paintStyle();
 }
-function renderLog(){
-  $('logBox').innerHTML = S.log.length ? S.log.map(l=>
-    `<div class="hist"><div class="ic m">🔔</div><div class="in"><b style="font-size:12px">${l.m}</b><small>${dt12(l.t)}</small></div></div>`
-  ).join('') : '<p class="hint">No alerts yet.</p>';
+function paintStyle(){
+  const map = {SCALP:'mdScalp', DAY:'mdDay', SWING:'mdSwing'};
+  for(const k in map){
+    const el = $(map[k]); if(!el) continue;
+    el.classList.toggle('on', S.style === k);
+    el.classList.toggle('gold', S.style === k);
+  }
+  const n = $('styleNote');
+  if(n) n.textContent = STYLES[S.style] ? STYLES[S.style].note : '';
+}
+
+/* ---- shrink the image before sending: saves quota and upload time ---- */
+function shrinkImage(file, maxPx){
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onerror = () => rej(new Error('Could not read that file'));
+    fr.onload = () => {
+      const img = new Image();
+      img.onerror = () => rej(new Error('That file is not a readable image'));
+      img.onload = () => {
+        const lim = maxPx || 1280;
+        let {width:w, height:h} = img;
+        const sc = Math.min(1, lim / Math.max(w, h));
+        w = Math.round(w * sc); h = Math.round(h * sc);
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        const url = cv.toDataURL('image/jpeg', 0.82);
+        res({ b64: url.split(',')[1], w, h });
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+
+/* ---- Gemini Vision: same retry/model-rotation logic as the text path ---- */
+async function gVisionOnce(model, prompt, b64){
+  const cfg = {temperature:0.25, maxOutputTokens:3000, responseMimeType:'application/json'};
+  if(/2\.5|thinking|flash-latest/.test(model)) cfg.thinkingConfig = {thinkingBudget:0};
+  const r = await fetch(`${G_BASE}/models/${model}:generateContent?key=${encodeURIComponent(S.gKey)}`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      contents:[{parts:[
+        {inline_data:{mime_type:'image/jpeg', data:b64}},
+        {text:prompt}
+      ]}],
+      generationConfig:cfg
+    })
+  });
+  if(!r.ok){
+    let msg = '', retry = 0;
+    try{
+      const j = await r.json();
+      msg = (j.error && j.error.message) || '';
+      const m = /retry in ([\d.]+)s/i.exec(msg);
+      if(m) retry = Math.ceil(+m[1]);
+    }catch(e){}
+    const e = new Error(msg || ('HTTP ' + r.status));
+    e.code = r.status; e.retry = retry;
+    e.dead = r.status === 404 || r.status === 400 || /limit:\s*0/.test(msg);
+    throw e;
+  }
+  const j = await r.json();
+  const cand = (j.candidates||[])[0] || {};
+  const parts = (cand.content && cand.content.parts) || [];
+  const txt = parts.map(x => x.text || '').join('');
+  if(!txt){
+    const e = new Error(cand.finishReason === 'MAX_TOKENS'
+      ? 'The reply was cut off (MAX_TOKENS)'
+      : 'Empty reply \u2014 ' + (cand.finishReason || 'unknown'));
+    e.soft = true; throw e;
+  }
+  const out = jsonRescue(txt);
+  if(!out){ const e = new Error('Could not parse the reply'); e.soft = true; throw e }
+  if(!out.signal){ const e = new Error('Reply is missing required fields'); e.soft = true; throw e }
+  return out;
+}
+
+async function gVision(prompt, b64, onNote){
+  if(!S.gKey) throw new Error('Add your Gemini API key in Settings');
+  let list = await gCandidates();
+  if(S.gModel && !list.includes(S.gModel)) S.gModel = '';
+  if(S.gModel) list = [S.gModel, ...list.filter(m => m !== S.gModel)];
+  let lastErr = null, waited = false;
+  for(const model of list){
+    try{
+      if(onNote) onNote(model);
+      const out = await gVisionOnce(model, prompt, b64);
+      S.gModel = model; save();
+      return out;
+    }catch(e){
+      lastErr = e;
+      if(e.dead){ gMarkBad(model); continue }
+      if(e.soft) continue;
+      if(e.code === 429){
+        if(e.retry && e.retry <= 30 && !waited){
+          waited = true;
+          if(onNote) onNote(model, e.retry);
+          await new Promise(r => setTimeout(r, (e.retry + 1) * 1000));
+          try{ const out = await gVisionOnce(model, prompt, b64); S.gModel = model; save(); return out }
+          catch(e2){ lastErr = e2 }
+        }
+        continue;
+      }
+      break;
+    }
+  }
+  const lm = (lastErr && lastErr.message) || 'AI did not respond';
+  throw new Error(/quota|exhaust/i.test(lm)
+    ? "Today's Gemini quota is used up \u2014 it resets tomorrow. You can also create a new key at aistudio.google.com."
+    : lm);
+}
+
+function shotPrompt(){
+  const st = STYLES[S.style] || STYLES.DAY;
+  const names = PAIRS.map(p => SPECS[p].n).join(', ');
+  return `You are a professional technical analyst reading a trading chart screenshot.
+
+STYLE: ${st.brief}
+
+Read the image carefully. Identify the instrument, the timeframe, the visible price
+structure, and the actual price levels from the vertical axis. Base every number on
+what is genuinely visible in the image \u2014 never invent levels.
+
+If the image is not a price chart, or is too blurry or cropped to read the price axis,
+set "signal" to "UNREADABLE" and explain what is missing in "reasoning".
+
+Known instruments (match the closest, using this exact spelling): ${names}
+
+Reply with JSON ONLY, no other text, in exactly this shape:
+{
+ "symbol": "closest match from the list above, or the raw ticker if none fits",
+ "timeframe": "what the chart shows, e.g. 15m, 1H, 4H, Daily",
+ "signal": "BUY" or "SELL" or "NO TRADE" or "UNREADABLE",
+ "confidence": 0-100 integer,
+ "entry": number,
+ "stop_loss": number,
+ "take_profit_1": number,
+ "take_profit_2": number,
+ "trend": "1-2 sentences on the dominant trend and current structure",
+ "support": [up to 3 numeric support levels, nearest first],
+ "resistance": [up to 3 numeric resistance levels, nearest first],
+ "reasoning": "2-3 sentences on why this direction, citing what you see",
+ "invalidation": "the single price level or condition that kills this setup",
+ "counter_trade": "2-3 sentences on the opposite case \u2014 what would have to happen for the other direction to work, and its rough entry and stop"
+}
+
+Rules:
+- Every price must be a plain number, no currency symbols or thousands separators.
+- Stop loss and take profits must sit on the correct side of the entry for the direction given.
+- Size the stop and targets to fit the ${st.label} style stated above.
+- Confidence must reflect genuine chart quality. If structure is unclear, score it low.
+- Be honest. If the setup is poor, return "NO TRADE" with your reasoning.`;
+}
+
+const shotIn = $('shotIn');
+if(shotIn) shotIn.addEventListener('change', async e => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if(!f) return;
+  if(!S.gKey){ toast('Add your Gemini API key in Settings'); openSheet('setSheet'); return }
+  if(f.size > 12 * 1024 * 1024){ toast('That image is too large \u2014 pick one under 12 MB'); return }
+
+  const box = $('shotBox');
+  $('shotState').textContent = 'reading chart\u2026';
+  box.innerHTML = '<p class="hint"><span class="spin"></span> Preparing the image\u2026</p>';
+
+  try{
+    const img = await shrinkImage(f, 1280);
+    box.innerHTML = '<p class="hint"><span class="spin"></span> Analyzing the chart\u2026</p>';
+    const d = await gVision(shotPrompt(), img.b64, (m, wait) => {
+      box.innerHTML = `<p class="hint"><span class="spin"></span> ` +
+        (wait ? `Rate limit \u2014 waiting ${wait}s (${m})` : `Reading with ${m}\u2026`) + `</p>`;
+    });
+
+    d.at = Date.now();
+    d.style = S.style;
+    d.sym = matchSymbol(d.symbol);
+    S.shot = d; save();
+    renderShot();
+    $('shotState').textContent = 'done';
+    if(d.signal === 'BUY' || d.signal === 'SELL') toast(`${d.signal} \u00b7 ${d.confidence}% confidence`);
+  }catch(err){
+    $('shotState').textContent = 'failed';
+    box.innerHTML = `<div style="border:1px solid var(--dn);background:rgba(255,68,68,.08);border-radius:6px;padding:12px">
+      <b style="color:var(--dn);font-size:10px;letter-spacing:1.2px">ANALYSIS FAILED</b>
+      <p class="hint" style="color:#f99;margin:5px 0 0">${err.message}</p></div>`;
+  }
+});
+
+/* map whatever the model called it onto one of our symbols */
+function matchSymbol(raw){
+  if(!raw) return null;
+  const q = String(raw).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  for(const p of PAIRS) if(SPECS[p].n.replace(/[^A-Z0-9]/g,'') === q) return p;
+  for(const p of PAIRS) if(q.startsWith(SPECS[p].n.replace(/[^A-Z0-9]/g,''))) return p;
+  if(/^(GOLD|XAUUSD)/.test(q)) return 'XAU/USD';
+  if(/^(SILVER|XAGUSD)/.test(q)) return 'XAG/USD';
+  if(/^(BITCOIN|BTC)/.test(q)) return 'BTC/USD';
+  if(/^(DOW|US30|DJI)/.test(q)) return 'US30';
+  if(/^(NAS|US100|NDX)/.test(q)) return 'NAS100';
+  return null;
+}
+
+function renderShot(){
+  const box = $('shotBox'); if(!box) return;
+  const d = S.shot;
+  if(!d){ box.innerHTML = ''; return }
+
+  const sym = d.sym;
+  const P = v => (sym && isFinite(v)) ? fmt(sym, v) : (isFinite(v) ? (+v).toString() : '\u2014');
+  const dir = d.signal;
+  const isTrade = dir === 'BUY' || dir === 'SELL';
+  const col = dir === 'BUY' ? 'var(--up)' : dir === 'SELL' ? 'var(--dn)' : 'var(--gold)';
+  const conf = Math.max(0, Math.min(100, +d.confidence || 0));
+  const ccol = conf >= 70 ? 'var(--up)' : conf >= 45 ? 'var(--gold)' : 'var(--dn)';
+  const lvls = a => (Array.isArray(a) ? a : []).filter(x => isFinite(x)).slice(0,3).map(P).join(' \u00b7 ') || '\u2014';
+
+  if(dir === 'UNREADABLE'){
+    box.innerHTML = `<div style="border:1px solid var(--gold);background:rgba(255,184,0,.07);border-radius:6px;padding:12px">
+      <b style="color:var(--gold);font-size:10px;letter-spacing:1.2px">\u26a0 COULD NOT READ THE CHART</b>
+      <p class="hint" style="margin:5px 0 0">${d.reasoning || 'The image was not clear enough.'}</p>
+      <p class="hint" style="margin:8px 0 0">Try a screenshot where the price axis and the pair name are both visible.</p></div>`;
+    return;
+  }
+
+  box.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;background:${dir==='BUY'?'rgba(18,201,138,.10)':dir==='SELL'?'rgba(242,84,91,.10)':'rgba(255,184,0,.08)'};
+         border:1px solid ${col};border-radius:11px;padding:11px 13px;margin-bottom:12px">
+      <b class="shine ${dir==='BUY'?'up':dir==='SELL'?'dn':'gd'}" style="font-size:17px;letter-spacing:.5px">${dir}</b>
+      <span class="mono" style="font-size:13px">${sym ? SPECS[sym].n : (d.symbol || '\u2014')}</span>
+      <span class="gr" style="margin-left:auto">${d.timeframe || ''}</span>
+    </div>
+
+    <div class="lbl" style="margin-bottom:4px"><span>Confidence</span><b class="mono" style="color:${ccol}">${conf}%</b></div>
+    <div style="height:6px;background:var(--bg);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:12px">
+      <div style="height:100%;width:${conf}%;background:${ccol}"></div>
+    </div>
+
+    ${isTrade ? `
+      <div class="lvls" style="margin-bottom:10px">
+        <div class="lvl"><span>ENTRY</span><b class="mono">${P(d.entry)}</b></div>
+        <div class="lvl sl"><span>STOP LOSS</span><b class="mono">${P(d.stop_loss)}</b></div>
+        <div class="lvl tp"><span>TAKE PROFIT</span><b class="mono">${P(d.take_profit_1)}</b>
+          ${isFinite(d.take_profit_2) ? `<small style="display:block;font-size:9px;color:var(--mut)">TP2 ${P(d.take_profit_2)}</small>` : ''}</div>
+      </div>
+      <p class="hint" style="margin:0 0 12px">${rrLine(d)}</p>` : ''}
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:11px;margin-bottom:10px">
+      <b style="color:var(--gold);font-size:10px;letter-spacing:1.5px">\ud83d\udcc8 TREND &amp; STRUCTURE</b>
+      <p class="hint" style="margin:5px 0 8px">${d.trend || '\u2014'}</p>
+      <div class="lbl"><span>Resistance</span><b class="mono" style="font-size:11px">${lvls(d.resistance)}</b></div>
+      <div class="lbl"><span>Support</span><b class="mono" style="font-size:11px">${lvls(d.support)}</b></div>
+    </div>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:11px;margin-bottom:10px">
+      <b style="color:var(--gold);font-size:10px;letter-spacing:1.5px">\ud83d\udcad REASONING</b>
+      <p class="hint" style="margin:5px 0 0">${d.reasoning || '\u2014'}</p>
+    </div>
+
+    ${d.invalidation ? `<div style="border:1px solid var(--gold);border-radius:6px;padding:11px;margin-bottom:10px;background:rgba(255,184,0,.05)">
+      <b style="color:var(--gold);font-size:10px;letter-spacing:1.5px">\ud83c\udfaf INVALIDATION</b>
+      <p class="hint" style="margin:5px 0 0">${d.invalidation}</p></div>` : ''}
+
+    ${d.counter_trade ? `<div style="border:1px solid var(--line);border-radius:6px;padding:11px;margin-bottom:10px">
+      <b style="color:var(--gold);font-size:10px;letter-spacing:1.5px">\ud83d\udd04 COUNTER-TRADE</b>
+      <p class="hint" style="margin:5px 0 0">${d.counter_trade}</p></div>` : ''}
+
+    <div style="border:1px solid var(--dn);background:rgba(255,68,68,.07);border-radius:6px;padding:10px;margin-bottom:12px">
+      <p class="hint" style="color:#f99;margin:0">These levels were read from your screenshot, not from live data. Check them against the current price before acting.</p>
+    </div>
+
+    ${isTrade && sym ? `<button class="btn gold" style="margin-bottom:8px" onclick="startTrack()">\u26a1 TRACK THIS SETUP</button>` : ''}
+    ${!sym && isTrade ? `<p class="hint" style="color:var(--gold);margin-bottom:8px">The instrument could not be matched to a tradable pair, so live tracking is unavailable.</p>` : ''}
+    <div class="grid2">
+      <button class="btn ghost sm" onclick="shareShot()">\ud83d\udcac SHARE</button>
+      <button class="btn ghost sm" onclick="clearShot()">\u2715 CLEAR</button>
+    </div>`;
+}
+
+function rrLine(d){
+  const e = +d.entry, sl = +d.stop_loss, tp = +d.take_profit_1;
+  if(!isFinite(e) || !isFinite(sl) || !isFinite(tp)) return '';
+  const risk = Math.abs(e - sl), rew = Math.abs(tp - e);
+  if(!risk) return '';
+  const rr = rew / risk;
+  const be = 100 / (1 + rr);
+  const c = rr >= 1.5 ? 'var(--up)' : rr >= 1 ? 'var(--gold)' : 'var(--dn)';
+  return `<span style="color:${c}">R:R 1:${rr.toFixed(2)}</span> \u00b7 breakeven needs ${be.toFixed(0)}% win rate`;
+}
+
+function clearShot(){
+  S.shot = null; save(); renderShot();
+  $('shotState').textContent = 'upload a screenshot';
+}
+
+function shotText(){
+  const d = S.shot; if(!d) return '';
+  const sym = d.sym;
+  const P = v => (sym && isFinite(v)) ? fmt(sym, v) : v;
+  const L = [];
+  L.push(`\ud83d\udcca CHART ANALYSIS \u2014 ${sym ? SPECS[sym].n : d.symbol}`);
+  L.push(`${d.signal} \u00b7 ${d.confidence}% confidence \u00b7 ${STYLES[d.style] ? STYLES[d.style].label : ''}`);
+  L.push('');
+  if(d.signal === 'BUY' || d.signal === 'SELL'){
+    L.push(`Entry  ${P(d.entry)}`);
+    L.push(`SL     ${P(d.stop_loss)}`);
+    L.push(`TP1    ${P(d.take_profit_1)}`);
+    if(isFinite(d.take_profit_2)) L.push(`TP2    ${P(d.take_profit_2)}`);
+    L.push('');
+  }
+  if(d.trend){ L.push('\ud83d\udcc8 ' + d.trend); L.push('') }
+  if(d.reasoning){ L.push(d.reasoning); L.push('') }
+  if(d.invalidation){ L.push('\ud83c\udfaf Invalid if: ' + d.invalidation); L.push('') }
+  if(d.counter_trade){ L.push('\ud83d\udd04 ' + d.counter_trade); L.push('') }
+  L.push('Levels read from a screenshot \u2014 verify against live price.');
+  L.push('\u2014 SamuSignal Pro');
+  return L.join('\n');
+}
+function shareShot(){
+  if(!S.shot){ toast('Analyze a chart first'); return }
+  if(S.tgTok && S.tgId) tgSend(shotText().replace(/</g,'&lt;'));
+  window.open('https://wa.me/?text=' + encodeURIComponent(shotText()), '_blank');
+}
+
+/* ================= LIVE TRACKING (one pair, the uploaded chart) =================
+   Costs 1 API credit per check and only runs while the app is open.
+   A PWA cannot poll in the background, so we are explicit about that. */
+
+function startTrack(){
+  const d = S.shot;
+  if(!d || !d.sym){ toast('No tradable pair to track'); return }
+  if(S.track && S.track.sym !== d.sym &&
+     !confirm(`Already tracking ${SPECS[S.track.sym].n}.\n\nReplace it with ${SPECS[d.sym].n}?`)) return;
+
+  S.track = {
+    sym: d.sym, dir: d.signal, style: d.style,
+    entry: +d.entry, sl: +d.stop_loss,
+    tp1: +d.take_profit_1, tp2: +d.take_profit_2,
+    conf: +d.confidence || 0,
+    startedAt: Date.now(), lastAt: 0, last: null,
+    hit: {}, done: false
+  };
+  save(); renderTrack();
+  toast(`Tracking ${SPECS[d.sym].n}`);
+  askNotif().catch(()=>{});
+  trackCheck(true);
+}
+function stopTrack(){
+  if(!S.track) return;
+  if(!confirm('Stop tracking this setup?')) return;
+  S.track = null; save(); renderTrack(); toast('Tracking stopped');
+}
+
+/* how close counts as "reached the entry" \u2014 scaled to the instrument */
+function entryZone(sym, entry, sl){
+  const d = Math.abs(entry - sl);
+  return d ? Math.max(d * 0.12, SPECS[sym].pip * 2) : SPECS[sym].pip * 5;
+}
+
+let trackBusy = false;
+async function trackCheck(force){
+  const t = S.track;
+  if(!t || t.done || trackBusy) return;
+  if(!S.key) return;
+  const gap = Math.max(2, +S.trackMin || 5) * 60000;
+  if(!force && Date.now() - t.lastAt < gap) return;
+  if(!force && creditsLeft() < 3) return;
+
+  trackBusy = true;
+  try{
+    const p = await getPrice(t.sym);
+    if(!isFinite(p) || !p) return;
+    t.last = p; t.lastAt = Date.now();
+
+    const up = t.dir === 'BUY';
+    const N = SPECS[t.sym].n;
+    const fire = (key, title, body, speakTxt) => {
+      if(t.hit[key]) return;
+      t.hit[key] = Date.now();
+      notify(title, body, 'track-' + key);
+      if(S.tts && speakTxt) speak(speakTxt);
+      if(S.tgAuto) tgSend(`<b>${title}</b>\n${body}\n\u23f0 ${t12(Date.now())}`, true);
+      toast(title);
+    };
+
+    /* entry zone */
+    if(isFinite(t.entry) && Math.abs(p - t.entry) <= entryZone(t.sym, t.entry, t.sl))
+      fire('entry', `\ud83d\udd14 Entry zone \u2014 ${N}`,
+           `${t.dir} setup is at its entry. Price ${fmt(t.sym,p)}, planned entry ${fmt(t.sym,t.entry)}.`,
+           `${N.split('').join(' ')} has reached the entry zone.`);
+
+    /* stop loss */
+    if(isFinite(t.sl) && (up ? p <= t.sl : p >= t.sl)){
+      fire('sl', `\ud83d\uded1 Stop level \u2014 ${N}`,
+           `Price ${fmt(t.sym,p)} reached the stop at ${fmt(t.sym,t.sl)}. This setup is done.`,
+           `${N.split('').join(' ')} hit the stop loss.`);
+      t.done = true;
+    }
+
+    /* targets */
+    if(isFinite(t.tp1) && (up ? p >= t.tp1 : p <= t.tp1))
+      fire('tp1', `\ud83c\udfaf TP1 reached \u2014 ${N}`,
+           `Price ${fmt(t.sym,p)} reached the first target at ${fmt(t.sym,t.tp1)}.`,
+           `${N.split('').join(' ')} reached target one.`);
+
+    if(isFinite(t.tp2) && (up ? p >= t.tp2 : p <= t.tp2)){
+      fire('tp2', `\ud83c\udfaf TP2 reached \u2014 ${N}`,
+           `Price ${fmt(t.sym,p)} reached the second target at ${fmt(t.sym,t.tp2)}.`,
+           `${N.split('').join(' ')} reached target two.`);
+      t.done = true;
+    }
+
+    save();
+    if(!$('pgAlerts').classList.contains('hide')) renderTrack();
+  }catch(e){
+    /* a failed price check is not worth interrupting the user for */
+  }finally{ trackBusy = false }
+}
+
+setInterval(() => {
+  if(document.hidden) return;
+  trackCheck(false);
+}, 30000);
+
+function renderTrack(){
+  const box = $('trackBox'), st = $('trackState');
+  if(!box) return;
+  const t = S.track;
+  if(!t){
+    if(st) st.textContent = 'off';
+    box.innerHTML = '<p class="hint">Analyze a chart above, then tap TRACK THIS SETUP to watch that pair for entry, stop and target levels.</p>';
+    return;
+  }
+  const N = SPECS[t.sym].n;
+  if(st) st.textContent = t.done ? 'finished' : N;
+  const p = t.last;
+  const up = t.dir === 'BUY';
+  const live = isFinite(p) ? fmt(t.sym, p) : '\u2014';
+  const pl = (isFinite(p) && isFinite(t.entry))
+    ? ((up ? p - t.entry : t.entry - p) / SPECS[t.sym].pip)
+    : null;
+
+  const row = (key, label, val, icon) => {
+    const on = !!t.hit[key];
+    return `<div class="hist" style="padding:8px 0">
+      <div class="ic ${on ? 'w' : 'm'}" style="font-size:11px">${icon}</div>
+      <div class="in"><b style="font-size:12px;${on?'color:var(--up)':''}">${label}</b>
+        <small>${val}${on ? ' \u00b7 reached ' + t12(t.hit[key]) : ''}</small></div>
+    </div>`;
+  };
+
+  box.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <b class="shine ${up?'up':'dn'}" style="font-size:15px">${t.dir}</b>
+      <span class="mono" style="font-size:13px">${N}</span>
+      <span class="gr" style="margin-left:auto">${STYLES[t.style] ? STYLES[t.style].label : ''}</span>
+    </div>
+
+    <div class="lbl"><span>Live price</span><b class="mono">${live}</b></div>
+    <div class="lbl"><span>Distance to entry</span><b class="mono">${
+      (isFinite(p) && isFinite(t.entry)) ? Math.abs((p - t.entry) / SPECS[t.sym].pip).toFixed(1) + ' pips' : '\u2014'
+    }</b></div>
+    ${pl !== null ? `<div class="lbl"><span>Move since entry level</span><b class="mono ${pl>=0?'up':'dn'}">${pl>=0?'+':''}${pl.toFixed(1)} pips</b></div>` : ''}
+    <div class="lbl"><span>Last checked</span><b class="mono">${t.lastAt ? ago(t.lastAt) : 'not yet'}</b></div>
+
+    <div style="margin:10px 0 4px">
+      ${row('entry','Entry zone', fmt(t.sym,t.entry), '\ud83d\udd14')}
+      ${row('sl','Stop loss', fmt(t.sym,t.sl), '\ud83d\uded1')}
+      ${isFinite(t.tp1) ? row('tp1','Target 1', fmt(t.sym,t.tp1), '\ud83c\udfaf') : ''}
+      ${isFinite(t.tp2) ? row('tp2','Target 2', fmt(t.sym,t.tp2), '\ud83c\udfaf') : ''}
+    </div>
+
+    ${t.done ? `<p class="hint" style="color:var(--gold);margin:8px 0">This setup has finished. Stop tracking to free up the slot.</p>` : ''}
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:10px;margin:10px 0">
+      <p class="hint" style="margin:0">Checks every ${S.trackMin} min and costs 1 API credit each time.
+      <b style="color:var(--gold)">Tracking only runs while this app is open</b> \u2014 phones cannot wake a web app in the background.</p>
+    </div>
+
+    <div class="grid2">
+      <button class="btn ghost sm" onclick="trackCheck(true)">\u27f3 CHECK NOW</button>
+      <button class="btn ghost sm" style="color:var(--dn)" onclick="stopTrack()">\u2715 STOP TRACKING</button>
+    </div>`;
 }
 
 /* ---------------- backup ---------------- */
@@ -4462,6 +4996,7 @@ function saveSettings(){
   S.gKey = $('setGKey').value.trim();
   if(S.gKey !== oldG){ S.gModel = ''; }
   S.autoM = +$('setAuto').value;
+  S.trackMin = Math.max(2, +$('setTrackMin').value || 5);
   $('inLots').value = S.dLot; S.lots = S.dLot;
   save(); closeSheet('setSheet');
   $('apiState').textContent = S.key ? 'API connected' : 'Set your API key';
@@ -4672,6 +5207,7 @@ function boot(){
   document.querySelectorAll('[data-th]').forEach(b => b.classList.toggle('on', b.dataset.th === S.theme));
   $('setCap').value = S.cap; $('setAuto').value = S.autoM;
   $('setNewsMin').value = S.newsMin; $('setNewsImp').value = S.newsImp;
+  $('setTrackMin').value = S.trackMin;
   $('setMode').value = S.slMode; $('setAtrSL').value = S.atrSL;
   $('setAtrRR').value = S.atrRR; $('setRisk').value = S.riskUsd;
   $('swAutoLot').classList.toggle('on', S.autoLot);
@@ -4690,7 +5226,9 @@ function boot(){
     buildTicker();
   renderSignal();
   renderTrades();
-  renderLog();
+  paintStyle();
+  renderShot();
+  renderTrack();
   showCredits();
   setTimeout(() => loadNews(false), 900);   /* once a day, costs no API credits */
   if(S.key){ refreshOpen(true); setTimeout(()=>refreshTicker(false), 1200); }
