@@ -28,19 +28,17 @@
     letter-spacing:1.5px; font-weight:700;
   }
   a:active{background:rgba(63,201,171,.12)}
-  small{display:block; margin-top:16px; font-size:10px; color:#3d6b60; letter-spacing:.5px}
+  .sm{font-size:11px; color:#4f857a; line-height:1.6; margin-bottom:18px}
 </style>
 </head>
 <body>
   <div class="box">
     <h1>SAMUSIGNAL PRO</h1>
     <div class="code">404</div>
-    <p>That page doesn't exist. Everything lives inside the app itself.</p>
+    <p>This page does not exist on the server.</p>
+    <p class="sm">If you were opening a specific page, check the spelling of
+    the file name, and that the file is committed to the repository.</p>
     <a href="./index.html">OPEN THE APP</a>
-    <small>Redirecting automatically…</small>
   </div>
-<script>
-  setTimeout(function(){ location.replace('./index.html'); }, 2500);
-</script>
 </body>
 </html>

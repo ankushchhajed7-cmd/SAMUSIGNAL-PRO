@@ -10,7 +10,7 @@
        -> never cached, always straight to the network.
    ================================================================== */
 
-const VERSION = '8.1.2';
+const VERSION = '8.2.0';
 const CACHE   = 'samusignal-pro-v' + VERSION.replace(/\./g, '-');
 
 const SHELL = [
@@ -86,26 +86,47 @@ self.addEventListener('fetch', e => {
   /* cross-origin (fonts, CDNs): let the browser handle it */
   if (url.origin !== self.location.origin) return;
 
+  /* Pages that must never be touched by the worker. The admin console and
+     the setup wizard have to reflect the live files, and must never fall
+     back to the app shell — doing so made a missing admin page silently
+     open the app instead, which was very confusing to debug. */
+  if (/(^|\/)(admin[^\/]*|setup)\.html$/i.test(url.pathname)) return;
+
   /* navigations + HTML: network first */
   const isDoc = req.mode === 'navigate' ||
                 (req.headers.get('accept') || '').includes('text/html');
 
   if (isDoc) {
+    /* Only the app itself may fall back to the cached shell. */
+    const isApp = /(^|\/)(index\.html)?$/.test(url.pathname);
+
     e.respondWith((async () => {
       try {
         const pre = await e.preloadResponse;
         const net = pre || await fetch(req, { cache: 'no-store' });
-        if (net && net.ok) {
+        if (net && net.ok && isApp) {
           const c = await caches.open(CACHE);
           c.put('./index.html', net.clone());
         }
+        /* a 404 or 500 is real information — pass it straight through */
         return net;
       } catch (err) {
         const c = await caches.open(CACHE);
-        return (await c.match(req)) ||
-               (await c.match('./index.html')) ||
-               (await c.match('./404.html')) ||
-               new Response('Offline', { status: 503, statusText: 'Offline' });
+        const exact = await c.match(req);
+        if (exact) return exact;
+        if (isApp) {
+          const shell = await c.match('./index.html');
+          if (shell) return shell;
+        }
+        return new Response(
+          '<!DOCTYPE html><meta charset="utf-8">' +
+          '<body style="background:#03100e;color:#a8f0d4;font-family:monospace;' +
+          'padding:40px 20px;text-align:center">' +
+          '<h2 style="color:#3fc9ab;letter-spacing:2px">OFFLINE</h2>' +
+          '<p>This page is not available without a connection.</p>' +
+          '<p><a style="color:#3fc9ab" href="./index.html">Open the app</a></p>',
+          { status: 503, headers: { 'Content-Type': 'text/html' } }
+        );
       }
     })());
     return;
