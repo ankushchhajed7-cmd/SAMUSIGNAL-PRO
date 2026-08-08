@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SamuSignal Pro — Admin</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#03100e">
+<link rel="icon" href="./favicon.png">
+<script src="./config.js"></script>
+<style>
+:root{
+  --bg:#03100e; --card:#08201c; --line:#12463c; --txt:#e8f5f1;
+  --mut:#a8f0d4; --gold:#3fc9ab; --up:#12c98a; --dn:#f2545b;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:'Courier New',Courier,monospace;font-size:13px;
+  padding:16px 12px 60px;line-height:1.6}
+.wrap{max-width:760px;margin:0 auto}
+h1{font-size:16px;letter-spacing:3px;color:var(--gold);text-align:center;margin:0 0 4px}
+.sub{text-align:center;font-size:11px;color:var(--mut);margin:0 0 18px;letter-spacing:1px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;
+  padding:14px;margin-bottom:14px}
+.ttl{font-size:12px;letter-spacing:2px;color:var(--gold);font-weight:800;
+  margin:0 0 12px;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.ttl .n{margin-left:auto;font-size:11px;color:var(--mut)}
+label{display:block;font-size:11px;font-weight:700;color:var(--gold);
+  letter-spacing:1px;margin:0 0 5px}
+input,textarea,select{width:100%;background:var(--bg);border:1px solid var(--line);
+  border-radius:7px;padding:10px;color:var(--txt);font-family:inherit;
+  font-size:13px;font-weight:600;margin-bottom:10px}
+button{width:100%;background:transparent;border:1px solid var(--line);border-radius:7px;
+  padding:11px;color:var(--txt);font-family:inherit;font-size:12px;font-weight:800;
+  letter-spacing:1.2px;cursor:pointer;margin-bottom:8px}
+button.go{border-color:var(--gold);color:var(--gold)}
+button.bad{border-color:var(--dn);color:var(--dn)}
+button.sm{padding:8px;font-size:11px;width:auto;margin:0}
+.row{border-bottom:1px solid var(--line);padding:11px 0}
+.row:last-child{border-bottom:0}
+.k{display:flex;gap:8px;font-size:12px;margin-bottom:3px}
+.k b{color:var(--gold)}
+.k span{margin-left:auto;color:var(--mut);font-size:11px}
+.mono{font-family:inherit;letter-spacing:.5px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;
+  font-weight:800;letter-spacing:1px}
+.tag.p{background:rgba(63,201,171,.15);color:var(--gold)}
+.tag.a{background:rgba(18,201,138,.15);color:var(--up)}
+.hint{font-size:11.5px;color:var(--mut);font-weight:600;margin:6px 0 0}
+.hide{display:none}
+.err{color:var(--dn);font-size:11.5px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>SAMUSIGNAL PRO</h1>
+  <p class="sub">ADMIN CONSOLE</p>
+
+  <!-- ===== login ===== -->
+  <div class="card" id="loginCard">
+    <p class="ttl">Sign In</p>
+    <label>Admin email</label>
+    <input id="em" type="email" autocomplete="username">
+    <label>Password</label>
+    <input id="pw" type="password" autocomplete="current-password">
+    <button class="go" onclick="login()">SIGN IN</button>
+    <p class="err" id="loginErr"></p>
+    <p class="hint">Uses the Firebase Auth account you created for yourself. Nobody else can write to the licence database.</p>
+  </div>
+
+  <!-- ===== main ===== -->
+  <div id="main" class="hide">
+    <div class="card">
+      <p class="ttl">Pending Payments <span class="n" id="nReq">0</span></p>
+      <div id="reqBox"></div>
+      <button class="sm" style="width:100%;margin-top:10px" onclick="loadAll()">⟳ REFRESH</button>
+    </div>
+
+    <div class="card">
+      <p class="ttl">Manual Activation</p>
+      <label>Device ID</label>
+      <input id="mDev" class="mono" placeholder="ABCD1234EFGH">
+      <button class="go" onclick="activate($('mDev').value.trim(), '', '')">ACTIVATE THIS DEVICE</button>
+      <p class="hint">Use this if someone paid you outside the app, or their request did not come through.</p>
+    </div>
+
+    <div class="card">
+      <p class="ttl">Support Inbox <span class="n" id="nSup">0</span></p>
+      <div id="supBox"></div>
+    </div>
+
+    <div class="card">
+      <p class="ttl">Device Lookup</p>
+      <label>Device ID or restore code</label>
+      <input id="qDev" class="mono">
+      <button onclick="lookup()">LOOK UP</button>
+      <div id="lookBox"></div>
+    </div>
+
+    <button class="bad" onclick="logout()">SIGN OUT</button>
+  </div>
+</div>
+
+<script>
+/* ---------------------------------------------------------------
+   CONFIG — paste the same values you put in index.html, plus the
+   Web API key from Firebase console > Project settings > General.
+   --------------------------------------------------------------- */
+const _C = window.SAMU_CONFIG || {};
+const CFG = {
+  db:     _C.db     || 'PASTE_YOUR_FIREBASE_DB_URL_HERE',
+  apiKey: _C.apiKey || 'PASTE_YOUR_FIREBASE_WEB_API_KEY_HERE'
+};
+
+const $ = id => document.getElementById(id);
+/* Firebase ID tokens last one hour. Keep the refresh token too, renew
+   before the token expires, and retry once if a call still comes back 401.
+   Without this a long admin session dies mid-activation. */
+let TOKEN   = sessionStorage.getItem('adm_tok') || '';
+let REFRESH = sessionStorage.getItem('adm_ref') || '';
+let EXPIRES = +sessionStorage.getItem('adm_exp') || 0;
+
+function saveSession(idToken, refreshToken, expiresIn){
+  TOKEN = idToken;
+  if(refreshToken) REFRESH = refreshToken;
+  EXPIRES = Date.now() + ((+expiresIn || 3600) * 1000);
+  sessionStorage.setItem('adm_tok', TOKEN);
+  sessionStorage.setItem('adm_ref', REFRESH);
+  sessionStorage.setItem('adm_exp', String(EXPIRES));
+}
+
+async function renew(){
+  if(!REFRESH) return false;
+  try{
+    const r = await fetch('https://securetoken.googleapis.com/v1/token?key=' + CFG.apiKey, {
+      method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(REFRESH)
+    });
+    const j = await r.json();
+    if(!r.ok || !j.id_token) return false;
+    saveSession(j.id_token, j.refresh_token, j.expires_in);
+    return true;
+  }catch(e){ return false }
+}
+
+/* renew a minute before expiry so no request goes out with a stale token */
+async function fresh(){
+  if(TOKEN && Date.now() < EXPIRES - 60000) return TOKEN;
+  if(await renew()) return TOKEN;
+  return TOKEN;
+}
+
+function url(path){ return CFG.db.replace(/\/$/,'') + '/' + path + '.json?auth=' + encodeURIComponent(TOKEN) }
+
+async function call(path, opts){
+  await fresh();
+  let r = await fetch(url(path), opts);
+  if(r.status === 401){
+    /* token rejected anyway — refresh once and try again */
+    if(await renew()) r = await fetch(url(path), opts);
+  }
+  if(r.status === 401){
+    sessionOver();
+    throw new Error('Session expired \u2014 please sign in again');
+  }
+  if(!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+function sessionOver(){
+  TOKEN = REFRESH = ''; EXPIRES = 0;
+  ['adm_tok','adm_ref','adm_exp'].forEach(k => sessionStorage.removeItem(k));
+  $('main').classList.add('hide');
+  $('loginCard').classList.remove('hide');
+  $('loginErr').textContent = 'Your session expired. Sign in again.';
+}
+
+const JSONH = {'Content-Type':'application/json'};
+async function get(path){ return call(path, {cache:'no-store'}) }
+async function patch(path, body){ return call(path, {method:'PATCH', headers:JSONH, body:JSON.stringify(body)}) }
+async function put(path, body){ return call(path, {method:'PUT', headers:JSONH, body:JSON.stringify(body)}) }
+
+async function login(){
+  const e = $('em').value.trim(), p = $('pw').value;
+  $('loginErr').textContent = '';
+  if(/PASTE_/.test(CFG.apiKey)){ $('loginErr').textContent = 'Fill in CFG at the top of this file first.'; return }
+  try{
+    const r = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + CFG.apiKey, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email:e, password:p, returnSecureToken:true})
+    });
+    const j = await r.json();
+    if(!r.ok) throw new Error((j.error && j.error.message) || 'Sign in failed');
+    saveSession(j.idToken, j.refreshToken, j.expiresIn);
+    show(); loadAll();
+  }catch(err){ $('loginErr').textContent = err.message }
+}
+function logout(){
+  TOKEN = REFRESH = ''; EXPIRES = 0;
+  ['adm_tok','adm_ref','adm_exp'].forEach(k => sessionStorage.removeItem(k));
+  location.reload();
+}
+function show(){ $('loginCard').classList.add('hide'); $('main').classList.remove('hide') }
+
+const t12 = d => new Date(d).toLocaleString(undefined,{day:'2-digit',month:'short',hour:'numeric',minute:'2-digit'});
+const esc = t => String(t||'').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+
+function makeRestore(){
+  const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let c=''; for(let i=0;i<12;i++) c+=A[Math.floor(Math.random()*A.length)];
+  return c;
+}
+
+/* ---- activate a device: writes the licence, mints a restore code ---- */
+async function activate(dev, reqId, name){
+  dev = (dev||'').trim().toUpperCase();
+  if(dev.length < 8){ alert('Enter a valid device ID'); return }
+  if(!confirm('Activate lifetime licence for\n\n' + dev + (name ? '\n(' + name + ')' : '') + '\n\nThis cannot be undone from here.')) return;
+  try{
+    const rc = makeRestore();
+    await patch('devices/' + dev, {
+      status: 'active',
+      activatedAt: Date.now(),
+      restoreCode: rc,
+      plan: 'lifetime'
+    });
+    await put('restore/' + rc, dev);
+    if(reqId) await patch('requests/' + reqId, {status:'done', doneAt: Date.now(), restoreCode: rc});
+    alert('Activated.\n\nRestore code: ' + rc + '\n\nThe app unlocks by itself within an hour, or instantly if the user taps CHECK NOW.');
+    loadAll();
+  }catch(e){ alert('Failed: ' + e.message) }
+}
+
+async function reject(reqId){
+  if(!confirm('Mark this request as rejected?')) return;
+  await patch('requests/' + reqId, {status:'rejected', doneAt: Date.now()});
+  loadAll();
+}
+
+async function reply(id){
+  const t = prompt('Reply to this message:');
+  if(!t) return;
+  await patch('support/' + id, {reply: t, repliedAt: Date.now(), status:'closed'});
+  loadAll();
+}
+
+async function loadAll(){
+  try{
+    const [reqs, sup] = await Promise.all([get('requests'), get('support')]);
+
+    const pend = Object.entries(reqs||{}).filter(([,v]) => v.status === 'pending')
+      .sort((a,b) => b[1].at - a[1].at);
+    $('nReq').textContent = pend.length;
+    $('reqBox').innerHTML = pend.length ? pend.map(([id,v]) => `
+      <div class="row">
+        <div class="k"><b>${esc(v.name)}</b><span>${t12(v.at)}</span></div>
+        <div class="k mono" style="font-size:11px">${esc(v.deviceCode)}</div>
+        <div class="k" style="font-size:11px">Txn: <b>${esc(v.txn)}</b></div>
+        ${v.contact ? `<div class="k" style="font-size:11px">${esc(v.contact)}</div>` : ''}
+        ${v.source ? `<div class="k"><span class="tag p">${esc(v.source)}</span></div>` : ''}
+        <div class="g2" style="margin-top:8px">
+          <button class="go sm" onclick="activate('${esc(v.deviceCode)}','${id}','${esc(v.name)}')">ACTIVATE</button>
+          <button class="bad sm" onclick="reject('${id}')">REJECT</button>
+        </div>
+      </div>`).join('') : '<p class="hint">No pending payments.</p>';
+
+    const open = Object.entries(sup||{}).filter(([,v]) => v.status === 'open')
+      .sort((a,b) => b[1].at - a[1].at);
+    $('nSup').textContent = open.length;
+    $('supBox').innerHTML = open.length ? open.map(([id,v]) => `
+      <div class="row">
+        <div class="k"><b>${esc(v.topic)}</b><span>${t12(v.at)}</span></div>
+        <div class="k mono" style="font-size:11px">${esc(v.deviceCode)}</div>
+        <p class="hint">${esc(v.message)}</p>
+        ${v.contact ? `<div class="k" style="font-size:11px">${esc(v.contact)}</div>` : ''}
+        <button class="go sm" style="margin-top:8px" onclick="reply('${id}')">REPLY</button>
+      </div>`).join('') : '<p class="hint">No open messages.</p>';
+  }catch(e){
+    $('reqBox').innerHTML = '<p class="err">' + e.message + '</p>';
+  }
+}
+
+async function lookup(){
+  const q = $('qDev').value.trim().toUpperCase();
+  if(!q) return;
+  try{
+    let dev = q;
+    const asRestore = await get('restore/' + q).catch(()=>null);
+    if(asRestore) dev = asRestore;
+    const r = await get('devices/' + dev);
+    if(!r){ $('lookBox').innerHTML = '<p class="err">Not found.</p>'; return }
+    const seats = Object.keys(r.seats || {}).length;
+    $('lookBox').innerHTML = `
+      <div class="row">
+        <div class="k"><b>${dev}</b><span class="tag ${r.status==='active'?'a':'p'}">${r.status}</span></div>
+        <div class="k" style="font-size:11px">Created ${t12(r.createdAt)}</div>
+        ${r.trialEnds ? `<div class="k" style="font-size:11px">Trial ends ${t12(r.trialEnds)}</div>` : ''}
+        ${r.activatedAt ? `<div class="k" style="font-size:11px">Activated ${t12(r.activatedAt)}</div>` : ''}
+        ${r.restoreCode ? `<div class="k mono" style="font-size:11px">Restore: <b>${r.restoreCode}</b></div>` : ''}
+        <div class="k" style="font-size:11px">Devices used: ${seats + 1} / 4</div>
+        ${r.status!=='active' ? `<button class="go sm" style="margin-top:8px" onclick="activate('${dev}','','')">ACTIVATE</button>` : ''}
+      </div>`;
+  }catch(e){ $('lookBox').innerHTML = '<p class="err">' + e.message + '</p>' }
+}
+
+if(TOKEN && REFRESH){ show(); loadAll() }
+else if(TOKEN){ sessionOver() }
+</script>
+</body>
+</html>
