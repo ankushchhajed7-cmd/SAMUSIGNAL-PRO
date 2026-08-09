@@ -850,6 +850,12 @@ body.t-navy{
       <input id="payTxn" placeholder="e.g. 4839201847">
       <label>Contact (optional)</label>
       <input id="payContact" placeholder="Email or phone, so we can reach you">
+
+      <label>Payment screenshot (optional)</label>
+      <button class="btn ghost sm" onclick="shotPay.click()">📷 ATTACH SCREENSHOT</button>
+      <input type="file" id="shotPay" accept="image/*" class="hide">
+      <div id="payPreview"></div>
+
       <button class="btn gold" style="margin-top:10px" onclick="submitPayment()">SUBMIT PAYMENT DETAILS</button>
       <p class="hint">Activation is usually done within 24 hours. The app checks by itself — leave it open or come back later.</p>
     </div>
@@ -1101,7 +1107,7 @@ body.t-navy{
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '8.3.0';
+const VERSION = '8.4.0';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -4651,7 +4657,7 @@ function paintStyle(){
 }
 
 /* ---- shrink the image before sending: saves quota and upload time ---- */
-function shrinkImage(file, maxPx){
+function shrinkImage(file, maxPx, quality){
   return new Promise((res, rej) => {
     const fr = new FileReader();
     fr.onerror = () => rej(new Error('Could not read that file'));
@@ -4666,7 +4672,7 @@ function shrinkImage(file, maxPx){
         const cv = document.createElement('canvas');
         cv.width = w; cv.height = h;
         cv.getContext('2d').drawImage(img, 0, 0, w, h);
-        const url = cv.toDataURL('image/jpeg', 0.82);
+        const url = cv.toDataURL('image/jpeg', quality || 0.82);
         res({ b64: url.split(',')[1], w, h });
       };
       img.src = fr.result;
@@ -5325,6 +5331,35 @@ function licBody(){
      <button class="btn ghost sm" style="margin-top:8px" onclick="openSheet('supSheet')">💬 CONTACT SUPPORT</button>`;
 }
 
+/* ---- payment receipt ---- */
+let payImg = null;   /* base64 JPEG, kept in memory until submit */
+
+const shotPay = $('shotPay');
+if(shotPay) shotPay.addEventListener('change', async e => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if(!f) return;
+  const box = $('payPreview');
+  box.innerHTML = '<p class="hint"><span class="spin"></span> Preparing\u2026</p>';
+  try{
+    /* A receipt only has to be readable, so compress hard. 900px at q0.6
+       lands around 60 kB, which keeps the database small and the upload quick
+       on a phone connection. */
+    const img = await shrinkImage(f, 900, 0.6);
+    if(img.b64.length > 190000){
+      box.innerHTML = '<p class="hint" style="color:var(--dn)">That image is too large. Try a cropped screenshot.</p>';
+      return;
+    }
+    payImg = img.b64;
+    box.innerHTML = `<div style="border:1px solid var(--line);border-radius:8px;padding:9px;margin-top:8px">
+      <img src="data:image/jpeg;base64,${img.b64}" style="width:100%;border-radius:5px;display:block">
+      <button class="btn ghost sm" style="margin-top:8px" onclick="clearPay()">\u2715 REMOVE</button></div>`;
+  }catch(err){
+    box.innerHTML = '<p class="hint" style="color:var(--dn)">Could not read that image.</p>';
+  }
+});
+function clearPay(){ payImg = null; $('payPreview').innerHTML = '' }
+
 /* ---- direct build: user submits their UPI reference ---- */
 async function submitPayment(){
   const name = $('payName').value.trim();
@@ -5333,10 +5368,17 @@ async function submitPayment(){
   if(!name || !txn){ toast('Enter your name and the transaction ID'); return }
   if(!licReady()){ toast('Licence server is not configured yet'); return }
   try{
-    await licPost('requests', {
+    const res = await licPost('requests', {
       deviceCode: deviceCode(), name, txn, contact,
-      amount: LIC.price, at: Date.now(), status: 'pending', v: VERSION
+      amount: LIC.price, at: Date.now(), status: 'pending', v: VERSION,
+      receipt: payImg ? true : false
     });
+    /* store the image separately, keyed by the request id */
+    if(payImg && res && res.name){
+      await licPut('receipts/' + res.name, payImg).catch(()=>{});
+    }
+    payImg = null;
+    if($('payPreview')) $('payPreview').innerHTML = '';
     LICS.state = Object.assign({}, LICS.state, {status:'pending'});
     LS.set('licState', LICS.state);
     licPaint();
