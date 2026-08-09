@@ -4,6 +4,6 @@ window.SAMU_CONFIG = {
   apiKey: 'AIzaSyDz7QvWLUtD8EJrBJYo7_8M_CKFnaV-ID0',
   mode: 'direct',
   sku: 'samusignal_pro_lifetime',
-  trialDays: 7,
+  trialDays: 0,
   price: '₹7,999'
 };
