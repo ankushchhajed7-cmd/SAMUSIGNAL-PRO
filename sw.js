@@ -10,14 +10,13 @@
        -> never cached, always straight to the network.
    ================================================================== */
 
-const VERSION = '8.4.0';
+const VERSION = '8.4.1';
 const CACHE   = 'samusignal-pro-v' + VERSION.replace(/\./g, '-');
 
 const SHELL = [
   './',
   './index.html',
   './manifest.json',
-  './config.js',
   './icon-192.png',
   './icon-512.png',
   './icon-512-maskable.png',
@@ -85,6 +84,11 @@ self.addEventListener('fetch', e => {
 
   /* cross-origin (fonts, CDNs): let the browser handle it */
   if (url.origin !== self.location.origin) return;
+
+  /* config.js decides trial length and which licence server to use.
+     It must always come from the network, never from a cache: a stale copy
+     silently changes licensing behaviour and is very hard to diagnose. */
+  if (/(^|\/)config\.js$/.test(url.pathname)) return;
 
   /* Pages that must never be touched by the worker. The admin console and
      the setup wizard have to reflect the live files, and must never fall
