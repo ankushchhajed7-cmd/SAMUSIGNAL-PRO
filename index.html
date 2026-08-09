@@ -881,6 +881,7 @@ body.t-navy{
       <button class="btn ghost sm" onclick="openSheet('supSheet')">💬 CONTACT SUPPORT</button>
       <button class="btn ghost sm" onclick="openSheet('guideSheet')">📘 SETUP GUIDE</button>
       <p class="hint" style="text-align:center;margin-top:10px">Device ID <b class="mono" id="lockDev">—</b></p>
+      <button class="btn gold hide" id="exitPrev" style="grid-column:1/-1" onclick="exitPreview()">✕ EXIT PREVIEW</button>
     </div>
   </div>
 </div>
@@ -1048,6 +1049,7 @@ body.t-navy{
     <button class="btn ghost sm" onclick="dayReset()">↺ Budget Reset</button>
   </div>
   <div id="apiOut" class="mono hide" style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:11.5px;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto;margin-bottom:10px"></div>
+  <button class="btn ghost sm" style="margin-bottom:8px" onclick="previewLock()">👁 Preview Lock Screen</button>
   <button class="btn ghost sm" style="margin-bottom:8px" onclick="unlockAll()">🔓 Reset Locked Pairs</button>
   <button class="btn ghost sm" onclick="wipeAll()" style="color:var(--dn)">Delete All Data</button>
 </div></div>
@@ -1107,7 +1109,7 @@ body.t-navy{
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '8.5.0';
+const VERSION = '8.5.1';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -5282,7 +5284,18 @@ function trialDaysLeft(){ return Math.ceil(trialLeftMs() / 86400000) }
    the worst a user can do with it is lock themselves out of their own copy.
    It exists because reproducing an expired trial otherwise means waiting
    seven days or fighting caches. */
-const PREVIEW_LOCK = /[?&]lock=1/.test(location.search);
+let PREVIEW_LOCK = /[?&]lock=1/.test(location.search) || /(^|[&#])lock=1/.test(location.hash);
+
+/* Preview from Settings, for when the URL query is not usable. */
+function previewLock(){
+  PREVIEW_LOCK = true;
+  closeSheet('setSheet');
+  licPaint();
+}
+function exitPreview(){
+  PREVIEW_LOCK = false;
+  licPaint();
+}
 
 function licOk(){
   if(PREVIEW_LOCK) return false;
@@ -5313,9 +5326,11 @@ function licPaint(){
     $('lockPlay').classList.toggle('hide', pend || LIC.mode !== 'play');
     $('lockDirect').classList.toggle('hide', pend || LIC.mode !== 'direct');
     $('lockSub').textContent = PREVIEW_LOCK
-      ? 'PREVIEW — remove ?lock=1 from the URL to exit'
+      ? 'PREVIEW — this is what a customer sees'
       : (pend ? 'Payment received — awaiting activation'
               : 'Your free trial has ended');
+    const ex = $('exitPrev');
+    if(ex) ex.classList.toggle('hide', !PREVIEW_LOCK);
   }
   licBody();
 }
