@@ -1107,7 +1107,7 @@ body.t-navy{
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '8.4.1';
+const VERSION = '8.5.0';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -5277,7 +5277,17 @@ function trialLeftMs(){
   return Math.max(0, st.trialEnds - Date.now());
 }
 function trialDaysLeft(){ return Math.ceil(trialLeftMs() / 86400000) }
-function licOk(){ return licActive() || trialLeftMs() > 0 }
+/* Add ?lock=1 to the URL to preview the lock screen at any time.
+   This can only ever LOCK the app, never unlock it, so it is safe to ship:
+   the worst a user can do with it is lock themselves out of their own copy.
+   It exists because reproducing an expired trial otherwise means waiting
+   seven days or fighting caches. */
+const PREVIEW_LOCK = /[?&]lock=1/.test(location.search);
+
+function licOk(){
+  if(PREVIEW_LOCK) return false;
+  return licActive() || trialLeftMs() > 0;
+}
 
 /* ---- lock / unlock the whole app ---- */
 function licPaint(){
@@ -5302,9 +5312,10 @@ function licPaint(){
     $('lockPending').classList.toggle('hide', !pend);
     $('lockPlay').classList.toggle('hide', pend || LIC.mode !== 'play');
     $('lockDirect').classList.toggle('hide', pend || LIC.mode !== 'direct');
-    $('lockSub').textContent = pend
-      ? 'Payment received — awaiting activation'
-      : 'Your free trial has ended';
+    $('lockSub').textContent = PREVIEW_LOCK
+      ? 'PREVIEW — remove ?lock=1 from the URL to exit'
+      : (pend ? 'Payment received — awaiting activation'
+              : 'Your free trial has ended');
   }
   licBody();
 }
