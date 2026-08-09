@@ -987,7 +987,7 @@ body.t-navy{
   <p class="ttl">Alerts &amp; Voice</p>
   <div class="sw" id="swNotif" onclick="toggleNotif(this)">
     <div class="tg"></div>
-    <div>Phone notifications<small>When a new signal arrives and when TP/SL is hit</small></div>
+    <div>Phone notifications<small id="notifNote">When a new signal arrives and when TP/SL is hit</small></div>
   </div>
   <div class="sw" id="swTts" onclick="toggleSw(this,'tts')">
     <div class="tg"></div>
@@ -1101,7 +1101,7 @@ body.t-navy{
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '8.2.0';
+const VERSION = '8.3.0';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -1134,6 +1134,7 @@ FX.forEach(pr => {
   };
 });
 SPECS['BTC/USD'] = {n:'BTCUSD', d:2, pip:1, contract:1, tv:'BITSTAMP:BTCUSD', ccy:['BTC','USD']};
+SPECS['ETH/USD'] = {n:'ETHUSD', d:2, pip:0.1, contract:1, tv:'BITSTAMP:ETHUSD', ccy:['ETH','USD']};
 /* US30 — 1 lot equals $1 per index point on most brokers */
 SPECS['US30']    = {n:'US30', d:1, pip:1, contract:1, tv:'CAPITALCOM:US30', ccy:['US30','USD'],
                     alt:['DJI','US30','DJIA','US30/USD']};
@@ -1149,7 +1150,7 @@ const GROUPS = {
   'AUD / NZD': ['AUD/JPY','AUD/CHF','AUD/CAD','AUD/NZD','NZD/JPY','NZD/CHF','NZD/CAD'],
   'CAD / CHF': ['CAD/CHF','CAD/JPY','CHF/JPY'],
   'Index':     ['US30'],
-  'Crypto':    ['BTC/USD']
+  'Crypto':    ['BTC/USD','ETH/USD']
 };
 
 /* 1 unit of quote-currency = kitne USD */
@@ -1649,8 +1650,23 @@ function shareAiWa(){
 }
 
 /* ---------- notifications ---------- */
+/* A wrapped app (TWA/WebView) has no web Notification API. Saying
+   "this browser does not support notifications" is confusing there, so
+   point the user at Telegram, which works even when the app is closed. */
+const WRAPPED = /median|gonative|wv\)|; wv/i.test(navigator.userAgent) ||
+                (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches
+                 && !('Notification' in window));
+function noNotif(){
+  return !('Notification' in window) || typeof Notification.requestPermission !== 'function';
+}
+
 async function askNotif(){
-  if(!('Notification' in window)){ toast('This browser does not support notifications'); return false }
+  if(noNotif()){
+    toast(WRAPPED
+      ? 'Phone alerts are not available in this build \u2014 use Telegram alerts instead'
+      : 'This browser does not support notifications');
+    return false;
+  }
   if(Notification.permission === 'granted') return true;
   if(Notification.permission === 'denied'){
     toast('Notifications are blocked — allow them in your browser site settings'); return false;
@@ -3544,7 +3560,7 @@ async function loadMarket(){
 /* fallback reference prices, used only for the pip table */
 function refPrice(sym){
   return {'XAU/USD':3300,'EUR/USD':1.09,'GBP/USD':1.27,'AUD/USD':0.66,'NZD/USD':0.60,
-    'USD/JPY':150,'USD/CHF':0.88,'USD/CAD':1.36,'BTC/USD':95000,'US30':44000}[sym] || 1;
+    'USD/JPY':150,'USD/CHF':0.88,'USD/CAD':1.36,'BTC/USD':95000,'ETH/USD':3200,'US30':44000}[sym] || 1;
 }
 
 /* ticker covers 5 symbols = 5 credits */
@@ -3608,11 +3624,12 @@ function chartBig(){
 /* ================= TRADE SIZING & STOP RULES ================= */
 
 /* Broker minimum stop distance in pips, kept as a safety default */
-const MIN_DEF = {'XAU/USD':50, 'BTC/USD':300, 'US30':60};
+const MIN_DEF = {'XAU/USD':50, 'BTC/USD':300, 'ETH/USD':150, 'US30':60};
 /* Pairs where the global $1/$2.50 default makes no sense — these get their own */
 const DEF_TPSL = {
   'XAU/USD': {tp:5,  sl:8},
   'BTC/USD': {tp:30, sl:50},
+  'ETH/USD': {tp:8,  sl:14},
   'US30':    {tp:6,  sl:10}
 };
 /* Base values are for 0.01 lot — the dollar amounts scale with lot size.
@@ -4750,7 +4767,10 @@ what is genuinely visible in the image \u2014 never invent levels.
 If the image is not a price chart, or is too blurry or cropped to read the price axis,
 set "signal" to "UNREADABLE" and explain what is missing in "reasoning".
 
-Known instruments (match the closest, using this exact spelling): ${names}
+If the instrument is one of these, use this exact spelling: ${names}
+If it is NOT in that list, report the ticker exactly as printed on the chart.
+Never substitute a different instrument — reporting an unknown ticker is
+correct, guessing a similar one is not.
 
 Reply with JSON ONLY, no other text, in exactly this shape:
 {
@@ -4822,6 +4842,7 @@ function matchSymbol(raw){
   if(/^(GOLD|XAUUSD)/.test(q)) return 'XAU/USD';
   if(/^(SILVER|XAGUSD)/.test(q)) return 'XAG/USD';
   if(/^(BITCOIN|BTC)/.test(q)) return 'BTC/USD';
+  if(/^(ETHEREUM|ETH)/.test(q)) return 'ETH/USD';
   if(/^(DOW|US30|DJI)/.test(q)) return 'US30';
   if(/^(NAS|US100|NDX)/.test(q)) return 'NAS100';
   return null;
@@ -4891,6 +4912,21 @@ function renderShot(){
       <b style="color:var(--gold);font-size:11.5px;letter-spacing:1.5px">\ud83d\udd04 COUNTER-TRADE</b>
       <p class="hint" style="margin:5px 0 0">${d.counter_trade}</p></div>` : ''}
 
+    ${(() => {
+      /* If the levels sit nowhere near the live price, the model almost
+         certainly read the wrong instrument. That silently breaks tracking,
+         so say so loudly rather than letting the user tap TRACK. */
+      if(!sym || !isFinite(d.entry)) return '';
+      const live = prices[sym] && prices[sym].p;
+      if(!live) return '';
+      const off = Math.abs(d.entry - live) / live;
+      if(off < 0.25) return '';
+      return `<div style="border:1px solid var(--dn);background:rgba(255,68,68,.12);border-radius:6px;padding:11px;margin-bottom:12px">
+        <b style="color:var(--dn);font-size:10.5px;letter-spacing:1.2px">⚠ WRONG INSTRUMENT?</b>
+        <p class="hint" style="color:#ffb3b3;font-weight:600;margin:5px 0 0">
+        These levels are ${(off*100).toFixed(0)}% away from the live ${SPECS[sym].n} price of ${fmt(sym,live)}.
+        The pair was probably misread. Do not track this — upload a screenshot where the pair name is clearly visible.</p></div>`;
+    })()}
     <div style="border:1px solid var(--dn);background:rgba(255,68,68,.07);border-radius:6px;padding:10px;margin-bottom:12px">
       <p class="hint" style="color:#ffb3b3;font-weight:600;margin:0">These levels were read from your screenshot, not from live data. Check them against the current price before acting.</p>
     </div>
@@ -5709,7 +5745,16 @@ function boot(){
   $('scanMin').onchange = e => { S.scanMin = +e.target.value; save(); drawScanRows(); renderScan() };
   $('scanDeep').onchange = e => { S.scanDeep = e.target.value === '1'; save(); renderScan() };
   renderScan();
-  $('swNotif').classList.toggle('on', S.notif && ('Notification' in window) && Notification.permission==='granted');
+  $('swNotif').classList.toggle('on', S.notif && !noNotif() && Notification.permission==='granted');
+  if(noNotif()){
+    /* Do not leave a dead switch on screen — explain and point elsewhere. */
+    S.notif = false;
+    $('swNotif').classList.remove('on');
+    $('swNotif').style.opacity = '.55';
+    $('swNotif').onclick = () => toast('Not available in this build — set up Telegram alerts below');
+    const n2 = $('notifNote');
+    if(n2) n2.textContent = 'Not available in this build — use Telegram alerts, which arrive even when the app is closed';
+  }
   $('swTts').classList.toggle('on', S.tts);
   $('swTgAuto').classList.toggle('on', S.tgAuto);
   document.querySelectorAll('[data-th]').forEach(b => b.classList.toggle('on', b.dataset.th === S.theme));
