@@ -41,20 +41,20 @@ header{
   position:sticky;top:0;z-index:40;background:var(--bg);
   padding:calc(7px + env(safe-area-inset-top)) 12px 7px;
 }
-.hbox{max-width:600px;margin:0 auto;text-align:center;padding:9px 10px;
+.hbox{max-width:600px;margin:0 auto;text-align:center;padding:5px 10px 7px;
   background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
-.hbox h1{margin:0 0 2px;font-size:16px;color:var(--gold);letter-spacing:2.5px;font-weight:700}
-.hbox p{margin:0;font-size:10px;font-weight:700;color:var(--lbl);letter-spacing:1.2px;white-space:nowrap}
-.hrow{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:9px}
+.hbox h1{margin:0;font-size:15px;color:var(--gold);letter-spacing:2.2px;font-weight:700;line-height:1.2}
+.hbox p{margin:0;font-size:9px;font-weight:700;color:var(--lbl);letter-spacing:1px;white-space:nowrap;opacity:.9}
+.hrow{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
 /* The licence badge spans the full width when visible, so the remaining
    buttons still pair up cleanly underneath it. */
-.hrow #licBadge{grid-column:1/-1}
-.ib{padding:9px 8px;background:var(--bg);border:2px solid var(--line);border-radius:7px;
+.hrow #licBadge{grid-column:1/-1;padding:5px 8px;font-size:10.5px}
+.ib{padding:6px 8px;background:var(--bg);border:2px solid var(--line);border-radius:6px;
   color:var(--lbl);font-size:10.5px;font-weight:700;letter-spacing:.5px;white-space:nowrap;line-height:1.4}
 .ib:active{border-color:var(--gold);color:var(--gold)}
-.clock{display:flex;align-items:baseline;justify-content:center;gap:7px;
-  margin-top:6px;font-size:11px;font-weight:700;color:var(--mut);white-space:nowrap}
-.clock b{color:var(--gold);font-size:13px;letter-spacing:.5px}
+.clock{display:flex;align-items:baseline;justify-content:center;gap:6px;
+  margin-top:3px;font-size:10px;font-weight:700;color:var(--mut);white-space:nowrap}
+.clock b{color:var(--gold);font-size:11.5px;letter-spacing:.5px}
 
 /* ---------- ticker ---------- */
 .tickwrap{max-width:600px;margin:0 auto 14px;padding:0 12px}
@@ -263,7 +263,7 @@ tr:last-child td{border-bottom:none}
 #lockWrap{position:fixed;inset:0;z-index:200;background:var(--bg);
   overflow-y:auto;padding:20px 14px 40px;display:none}
 #lockWrap.on{display:block}
-.lockCard{max-width:460px;margin:0 auto;background:var(--panel);
+.lockCard{max-width:460px;margin:0 auto;background:var(--panel);position:relative;
   border:1px solid var(--line);border-radius:14px;padding:20px 16px}
 .lockCard h2{margin:0 0 4px;text-align:center;font-size:19px;letter-spacing:3px}
 .lockSub{text-align:center;color:var(--gold);font-size:12.5px;font-weight:700;
@@ -567,6 +567,45 @@ nav{border-top:2px solid var(--gold)}
 header{border-bottom:2px solid var(--gold)}
 .ib:active{border-color:var(--gold);color:var(--gold)}
 .up{color:var(--up)} .dn{color:var(--dn)}
+
+/* ---- moving sheen on card edges ----
+   A gradient border cannot be animated directly, so the card gets a
+   pseudo-element one layer behind it carrying the same sweep used on the
+   titles. `inset:-2px` makes it read as a 2px border. */
+/* Fallback first: if mask-composite is unsupported the card keeps a plain
+   bright border rather than losing its edge entirely. */
+.card{position:relative;border-color:var(--shineA)}
+@supports ((-webkit-mask-composite:xor) or (mask-composite:exclude)){
+  .card{border-color:transparent}
+}
+.card::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  border:2px solid transparent;
+  background-image:linear-gradient(115deg,
+    var(--shineA) 0%, var(--shineA) 34%,
+    var(--shineB) 45%, var(--shineHi) 50%, var(--shineB) 55%,
+    var(--shineA) 66%, var(--shineA) 100%);
+  background-size:260% 100%;
+  animation:mirror 6s ease-in-out infinite;
+  /* show the gradient only where the border is: fill both boxes, then mask
+     out everything inside the padding edge */
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  display:none;
+}
+@supports ((-webkit-mask-composite:xor) or (mask-composite:exclude)){
+  .card::before{display:block}
+}
+/* the sheen belongs to the outer card only; nested boxes stay plain */
+.card .card{border-color:var(--line)}
+.card .card::before{display:none}
+
+/* section headers inside a card get a matching underline */
+.card .ttl{padding-bottom:7px;border-bottom:2px solid var(--shineA)}
+.card .ttl + .hint{margin-top:9px}
+
+@media (prefers-reduced-motion:reduce){ .card::before{animation:none} }
 </style>
 </head>
 <body class="lux t-emerald">
@@ -1136,7 +1175,7 @@ header{border-bottom:2px solid var(--gold)}
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '8.6.0';
+const VERSION = '8.6.1';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
