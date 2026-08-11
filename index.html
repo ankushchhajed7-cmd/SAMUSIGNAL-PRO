@@ -58,7 +58,7 @@ header.hide{display:none}
 .clock b{color:var(--gold);font-size:11.5px;letter-spacing:.5px}
 
 /* ---------- ticker ---------- */
-.tickwrap{max-width:600px;margin:0 auto 14px;padding:0 12px}
+.tickwrap{margin:0 0 14px}
 .tick{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
   padding:9px 12px;font-size:11px;display:flex;gap:18px;white-space:nowrap;overflow:hidden}
 .tick span{color:var(--lbl)}
@@ -66,8 +66,10 @@ header.hide{display:none}
 
 /* ---------- layout ---------- */
 main{padding:0 12px 20px;max-width:600px;margin:0 auto}
-/* pages without the header need their own top inset */
-main > section:not(#pgSignals){padding-top:calc(12px + env(safe-area-inset-top))}
+/* Pages without the header start straight at the top: just enough inset to
+   clear the status bar, with no empty band above the first card. */
+main > section:not(#pgSignals){padding-top:env(safe-area-inset-top)}
+main > section:not(#pgSignals) > *:first-child{margin-top:0}
 .card{background:var(--panel);border:2px solid var(--line);border-radius:var(--r);
   padding:14px;margin-bottom:14px}
 .ttl{font-size:13px;letter-spacing:2px;text-transform:uppercase;
@@ -650,12 +652,13 @@ header{border-bottom:2px solid var(--gold)}
   </div>
 </header>
 
-<div class="tickwrap"><div class="tick" id="tick"></div></div>
+
 
 <main>
 
 <!-- ============ SIGNALS ============ -->
 <section id="pgSignals">
+  <div class="tickwrap"><div class="tick" id="tick"></div></div>
   <div class="card" id="dayBar"></div>
   <div class="card">
     <p class="ttl">Analysis <span class="sp" id="apiState">Set your API key</span></p>
@@ -1178,7 +1181,7 @@ header{border-bottom:2px solid var(--gold)}
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '8.6.2';
+const VERSION = '8.6.3';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
