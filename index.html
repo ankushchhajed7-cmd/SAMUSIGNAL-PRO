@@ -15,7 +15,7 @@
 <link rel="icon" type="image/png" href="./favicon.png">
 <style>
 :root{
-  --bg:#0d0d0d; --panel:#141414; --panel2:#0d0d0d; --line:#2a2a2a;
+  --bg:#0d0d0d; --panel:#141414; --panel2:#0d0d0d; --line:#4a4a4a;
   --txt:#f5f5f5; --mut:#a8f0d4; --dim:#8fe0c2;
   --shineA:#00FF96; --shineB:#7dffcb; --shineHi:#ffffff;
   --lbl:#8fd4ff;
@@ -45,12 +45,16 @@ header{
   background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
 .hbox h1{margin:0 0 2px;font-size:16px;color:var(--gold);letter-spacing:2.5px;font-weight:700}
 .hbox p{margin:0;font-size:10px;font-weight:700;color:var(--lbl);letter-spacing:1.2px;white-space:nowrap}
-.hrow{display:flex;gap:5px;margin-top:8px;justify-content:center;align-items:center}
-.ib{padding:5px 8px;background:var(--bg);border:1px solid var(--line);border-radius:5px;
+.hrow{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:9px}
+/* The licence badge spans the full width when visible, so the remaining
+   buttons still pair up cleanly underneath it. */
+.hrow #licBadge{grid-column:1/-1}
+.ib{padding:9px 8px;background:var(--bg);border:2px solid var(--line);border-radius:7px;
   color:var(--lbl);font-size:10.5px;font-weight:700;letter-spacing:.5px;white-space:nowrap;line-height:1.4}
 .ib:active{border-color:var(--gold);color:var(--gold)}
-.clock{padding:4px 7px;font-size:10px;font-weight:700;color:var(--mut);line-height:1.35;text-align:left;white-space:nowrap}
-.clock b{display:block;color:var(--gold);font-size:11px;letter-spacing:.5px}
+.clock{display:flex;align-items:baseline;justify-content:center;gap:7px;
+  margin-top:6px;font-size:11px;font-weight:700;color:var(--mut);white-space:nowrap}
+.clock b{color:var(--gold);font-size:13px;letter-spacing:.5px}
 
 /* ---------- ticker ---------- */
 .tickwrap{max-width:600px;margin:0 auto 14px;padding:0 12px}
@@ -61,7 +65,7 @@ header{
 
 /* ---------- layout ---------- */
 main{padding:0 12px 20px;max-width:600px;margin:0 auto}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+.card{background:var(--panel);border:2px solid var(--line);border-radius:var(--r);
   padding:14px;margin-bottom:14px}
 .ttl{font-size:13px;letter-spacing:2px;text-transform:uppercase;
   margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px;
@@ -102,7 +106,7 @@ input:focus,select:focus{border-color:var(--gold)}
 /* ---------- buttons: outlined terminal style ---------- */
 .btn{display:block;width:100%;padding:12px;border-radius:6px;font-weight:700;text-align:center;
   letter-spacing:1px;text-transform:uppercase;font-size:12px;
-  background:rgba(0,204,255,.12);color:var(--blue);border:1px solid var(--blue)}
+  background:rgba(0,204,255,.12);color:var(--blue);border:2px solid var(--blue)}
 .btn:active{opacity:.65}
 .btn.g{background:rgba(0,255,150,.12);color:var(--up);border-color:var(--up);
   text-shadow:0 0 10px rgba(0,255,150,.6);box-shadow:0 0 16px rgba(0,255,150,.12)}
@@ -125,7 +129,7 @@ input:focus,select:focus{border-color:var(--gold)}
 .pgrp{font-size:10.5px;color:var(--gold);letter-spacing:2px;font-weight:700;
   padding:14px 2px 7px;position:sticky;top:0;background:var(--panel)}
 .prow{width:100%;display:flex;align-items:center;gap:10px;padding:12px 11px;margin-bottom:6px;
-  background:var(--bg);border:1px solid var(--line);border-radius:6px;
+  background:var(--bg);border:2px solid var(--line);border-radius:6px;
   font-size:13px;font-weight:700;letter-spacing:1px;color:var(--txt);text-align:left}
 .prow.on{border-color:var(--blue);background:rgba(0,204,255,.1);color:var(--blue)}
 .prow.off{opacity:.4}
@@ -136,7 +140,7 @@ input:focus,select:focus{border-color:var(--gold)}
 .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:0 0 auto;padding:8px 13px;border-radius:6px;background:var(--panel);
-  border:1px solid var(--line);font-size:11px;font-weight:700;color:var(--lbl);letter-spacing:.5px}
+  border:2px solid var(--line);font-size:11px;font-weight:700;color:var(--lbl);letter-spacing:.5px}
 .chip.on{background:rgba(0,204,255,.15);border-color:var(--blue);color:var(--blue)}
 .chip.on.gold{background:rgba(255,184,0,.15);border-color:var(--gold);color:var(--gold)}
 
@@ -190,7 +194,7 @@ input:focus,select:focus{border-color:var(--gold)}
 .segs i.f{background:var(--up)} .segs i.f.w{background:var(--gold)} .segs i.f.b{background:var(--dn)}
 
 .lvls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
-.lvl{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 4px;text-align:center}
+.lvl{background:var(--panel);border:2px solid var(--line);border-radius:6px;padding:9px 4px;text-align:center}
 .lvl>span{display:block;font-size:10.5px;color:var(--lbl);letter-spacing:1px;font-weight:700;margin-bottom:5px}
 .lvl b{font-size:13px;display:block}
 .lvl.sl b{color:var(--dn);text-shadow:0 0 9px rgba(255,68,68,.5)} .lvl.tp b{color:var(--up);text-shadow:0 0 9px rgba(0,255,150,.5)}
@@ -225,16 +229,16 @@ tr:last-child td{border-bottom:none}
 .bar i{display:block;height:100%}
 
 .stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
-.st{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 5px;text-align:center}
+.st{background:var(--panel);border:2px solid var(--line);border-radius:var(--r);padding:12px 5px;text-align:center}
 .st span{display:block;font-size:10.5px;color:var(--lbl);letter-spacing:1.2px;font-weight:700;margin-bottom:5px}
 .st b{font-size:17px}
 
 .perf{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
-.pb{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px 4px;text-align:center}
+.pb{background:var(--bg);border:2px solid var(--line);border-radius:6px;padding:12px 4px;text-align:center}
 .pb b{display:block;font-size:19px;line-height:1.1}
 .pb span{display:block;font-size:10px;color:var(--lbl);letter-spacing:1.2px;font-weight:700;margin-top:5px}
 .pb em{display:block;font-style:normal;font-size:11px;font-weight:700;color:var(--mut);margin-top:4px;letter-spacing:.2px}
-.ptot{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:16px;text-align:center}
+.ptot{background:var(--bg);border:2px solid var(--line);border-radius:6px;padding:16px;text-align:center}
 .ptot b{display:block;font-size:27px;line-height:1}
 .ptot span{display:block;font-size:10.5px;color:var(--lbl);letter-spacing:1.6px;font-weight:700;margin-top:6px}
 
@@ -242,7 +246,7 @@ tr:last-child td{border-bottom:none}
 .vbar i{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
   color:#0d0d0d;font-style:normal;letter-spacing:.5px;transition:width .5s;text-shadow:0 1px 2px rgba(255,255,255,.3)}
 .vote3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.vc{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:13px 5px;text-align:center}
+.vc{background:var(--bg);border:2px solid var(--line);border-radius:6px;padding:13px 5px;text-align:center}
 .vc b{display:block;font-size:24px;line-height:1}
 .vc span{display:block;font-size:10.5px;color:var(--mut);letter-spacing:1.4px;font-weight:700;margin-top:5px}
 .vc.b{border-color:rgba(0,255,150,.45)} .vc.s{border-color:rgba(255,68,68,.45)}
@@ -259,7 +263,7 @@ tr:last-child td{border-bottom:none}
 #lockWrap{position:fixed;inset:0;z-index:200;background:var(--bg);
   overflow-y:auto;padding:20px 14px 40px;display:none}
 #lockWrap.on{display:block}
-.lockCard{max-width:460px;margin:0 auto;background:var(--card);
+.lockCard{max-width:460px;margin:0 auto;background:var(--panel);
   border:1px solid var(--line);border-radius:14px;padding:20px 16px}
 .lockCard h2{margin:0 0 4px;text-align:center;font-size:19px;letter-spacing:3px}
 .lockSub{text-align:center;color:var(--gold);font-size:12.5px;font-weight:700;
@@ -502,7 +506,7 @@ body.lux .spin{border-color:rgba(var(--accRGB),.25);border-top-color:#e8c063}
 
 /* ---- theme palettes ---- */
 body.t-gold{
-  --bg:#0a0704; --panel:#141009; --panel2:#0d0a05; --line:#3d2f14;
+  --bg:#0a0704; --panel:#141009; --panel2:#0d0a05; --line:#7a6230;
   --g1:rgba(212,163,60,.16); --g2:rgba(160,115,30,.10); --g3:rgba(120,86,20,.09);
   --cA:rgba(46,35,14,.85); --cB:rgba(14,10,5,.92);
   --cC:rgba(40,30,12,.55); --cD:rgba(12,9,4,.75); --cE:rgba(58,44,18,.55);
@@ -511,7 +515,7 @@ body.t-gold{
 }
 body.t-emerald{
   --shineA:#3fc9ab; --shineB:#8ff0dc; --shineHi:#eafffa;
-  --bg:#03100e; --panel:#08201c; --panel2:#051512; --line:#12463c;
+  --bg:#03100e; --panel:#08201c; --panel2:#051512; --line:#2b7d6a;
   --accRGB:212,175,80;
   --g1:rgba(20,180,150,.16); --g2:rgba(212,163,60,.10); --g3:rgba(10,120,100,.12);
   --cA:rgba(10,58,50,.85); --cB:rgba(3,20,17,.92);
@@ -521,7 +525,7 @@ body.t-emerald{
 }
 body.t-royal{
   --shineA:#c274ee; --shineB:#e5b3ff; --shineHi:#faf0ff;
-  --bg:#0d0413; --panel:#1a0a26; --panel2:#0f0518; --line:#3f1c58;
+  --bg:#0d0413; --panel:#1a0a26; --panel2:#0f0518; --line:#6a3d94;
   --accRGB:222,176,70;
   --g1:rgba(150,60,220,.18); --g2:rgba(212,163,60,.10); --g3:rgba(95,30,150,.14);
   --cA:rgba(52,18,76,.85); --cB:rgba(16,6,24,.92);
@@ -531,7 +535,7 @@ body.t-royal{
 }
 body.t-navy{
   --shineA:#eccd77; --shineB:#fbeaae; --shineHi:#fffaea;
-  --bg:#020a1c; --panel:#06152f; --panel2:#040e22; --line:#123163;
+  --bg:#020a1c; --panel:#06152f; --panel2:#040e22; --line:#2d5c9e;
   --accRGB:224,178,64;
   --g1:rgba(30,90,200,.18); --g2:rgba(224,178,64,.11); --g3:rgba(15,50,130,.14);
   --cA:rgba(9,38,84,.88); --cB:rgba(2,9,24,.94);
@@ -539,6 +543,30 @@ body.t-navy{
   --pA:#fbeaae; --pB:#eccd77; --pC:#d0a63c; --pD:#b8862a; --pE:#f2dfa4;
   --pT:#1a1203; --pG:rgba(200,150,40,.30);
 }
+
+/* ---- bold, meaningful borders ----
+   A border should tell you something. Cards use the accent, and anything
+   that carries a direction or a risk borrows that colour instead. */
+.card{border-color:var(--gold);box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.card .card{border-color:var(--line)}
+.btn{border-width:2px}
+.btn.g{border-color:var(--up)}
+.btn.r{border-color:var(--dn)}
+.btn.gold{border-color:var(--gold)}
+.chip.on{border-color:var(--gold);border-width:2px}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none}
+.sw.on{border-color:var(--up)}
+.lvl.sl{border-color:var(--dn)}
+.lvl.tp{border-color:var(--up)}
+.hist{border-bottom:2px solid var(--line)}
+.ic.w{border-width:2px}
+th{border-bottom:2px solid var(--gold)}
+td{border-bottom:1px solid var(--line)}
+.sh-h{border-bottom:2px solid var(--gold)}
+nav{border-top:2px solid var(--gold)}
+header{border-bottom:2px solid var(--gold)}
+.ib:active{border-color:var(--gold);color:var(--gold)}
+.up{color:var(--up)} .dn{color:var(--dn)}
 </style>
 </head>
 <body class="lux t-emerald">
@@ -569,11 +597,12 @@ body.t-navy{
   <div class="hbox">
     <h1 class="shine gd">SAMUSIGNAL PRO</h1>
     <p>FOREX &amp; GOLD SIGNALS · <span id="verTag">v—</span></p>
+    <div class="clock"><b id="clkT">--:--</b><span id="clkD">--</span></div>
     <div class="hrow">
-      <div class="clock"><b id="clkT">--:--</b><span id="clkD">--</span></div>
       <button class="ib" id="licBadge" onclick="openSheet('licSheet')" style="display:none"></button>
       <button class="ib" id="btnRef" onclick="refreshAll()">⟳ REFRESH</button>
       <button class="ib" id="btnInstall">⬇ INSTALL</button>
+      <button class="ib" onclick="openSheet('guideSheet')">📘 HOW TO USE</button>
       <button class="ib" onclick="openSheet('setSheet')">⚙ SETTINGS</button>
     </div>
   </div>
@@ -915,12 +944,10 @@ body.t-navy{
 
 <!-- ============ GUIDE SHEET ============ -->
 <div class="ov" id="guideSheet"><div class="sheet">
-  <div class="sh-h"><h3>Setup Guide</h3><button class="x" onclick="closeSheet('guideSheet')">✕</button></div>
+  <div class="sh-h"><h3>How To Use</h3><button class="x" onclick="closeSheet('guideSheet')">✕</button></div>
   <div class="sh-b">
-    <p class="hint" style="margin-top:0">Full walkthrough: getting your API keys, setting up a Telegram bot, and using every feature.</p>
-    <a class="btn gold" href="./guide-en.pdf" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px">📘 OPEN GUIDE — ENGLISH</a>
-    <a class="btn ghost" href="./guide-hi.pdf" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">📗 GUIDE KHOLO — HINGLISH</a>
-    <p class="hint">The guide opens in your browser and can be saved for offline reading.</p>
+    <div class="chips" id="gTabs" style="margin-bottom:14px"></div>
+    <div id="gBody"></div>
   </div>
 </div></div>
 
@@ -1109,7 +1136,7 @@ body.t-navy{
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '8.5.1';
+const VERSION = '8.6.0';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -1717,7 +1744,8 @@ function speakSignal(s){
 /* ---------- ui helpers ---------- */
 let tmr;
 function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(tmr); tmr=setTimeout(()=>t.classList.remove('on'),2600); }
-function openSheet(id){ $(id).classList.add('on') }
+function openSheet(id){
+  if(id === 'guideSheet') renderGuide(); $(id).classList.add('on') }
 function closeSheet(id){ $(id).classList.remove('on') }
 document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('on') }));
 function go(pg,btn){
@@ -2806,7 +2834,15 @@ async function runScan(){
 
 /* jump straight from a scan result into the full analysis */
 async function openScanned(sym){
-  S.pair = sym; pickVal.main = sym; save();
+  S.pair = sym; pickVal.main = sym;
+  /* Switching pair may change the broker minimum, so re-clamp the lot box. */
+  const lv = fixLot(sym, S.lots);
+  if(lv !== S.lots){
+    S.lots = lv;
+    if($('inLots')) $('inLots').value = lv;
+    toast(`${SPECS[sym].n} minimum lot is ${minLot(sym)}`);
+  }
+  save();
   fillPairs(); setChart(sym);
   lastSignal = null; lastVotes = null; lastAn = null;
   go('Signals', document.querySelector('nav button[data-pg="Signals"]'));
@@ -3633,6 +3669,17 @@ function chartBig(){
 
 /* Broker minimum stop distance in pips, kept as a safety default */
 const MIN_DEF = {'XAU/USD':50, 'BTC/USD':300, 'ETH/USD':150, 'US30':60};
+
+/* Smallest lot the broker will accept, per instrument. Anything below this
+   is rejected at the broker, so the app must not suggest it. */
+const MIN_LOT = {'ETH/USD':0.10, 'BTC/USD':0.02};
+function minLot(sym){ return MIN_LOT[sym] || 0.01 }
+/* Round a lot up to the nearest valid step for that instrument. */
+function fixLot(sym, lots){
+  const m = minLot(sym);
+  const v = Math.max(m, +lots || m);
+  return +(Math.round(v / m) * m).toFixed(3);
+}
 /* Pairs where the global $1/$2.50 default makes no sense — these get their own */
 const DEF_TPSL = {
   'XAU/USD': {tp:5,  sl:8},
@@ -3646,6 +3693,7 @@ const LOT_UNIT = 0.01;
 function baseTP(sym){ return (S.symDef[sym] && S.symDef[sym].tp) ?? (DEF_TPSL[sym] ? DEF_TPSL[sym].tp : S.dTp) }
 function baseSL(sym){ return (S.symDef[sym] && S.symDef[sym].sl) ?? (DEF_TPSL[sym] ? DEF_TPSL[sym].sl : S.dSl) }
 function lotMul(lots){ return Math.max(0.01, (+lots || LOT_UNIT)) / LOT_UNIT }
+/* auto-sizing must also respect the instrument minimum */
 function defTP(sym, lots){ return +(baseTP(sym) * lotMul(lots)).toFixed(2) }
 function defSL(sym, lots){ return +(baseSL(sym) * lotMul(lots)).toFixed(2) }
 function hasOwnDef(sym){ return !!(S.symDef[sym] || DEF_TPSL[sym]) }
@@ -5531,6 +5579,195 @@ document.addEventListener('visibilitychange', () => {
   if(!document.hidden && Date.now() - LICS.seen > 900000) licRefresh(false);
 });
 
+
+/* ================= IN-APP GUIDE =================
+   Written as data rather than markup so it stays editable in one place.
+   Replaces the old PDFs: a PDF cannot be updated once someone has saved it,
+   and on a phone it drops the reader out of the app entirely. */
+
+const GUIDE = [
+{ id:'start', t:'Start Here', body:[
+  ['h','What this app is'],
+  ['p','SamuSignal Pro reads the market with 50 rule-based agents and a set of classic indicators, then tells you what it sees and how confident it is. It is an analysis and journalling tool. It does not connect to your broker and cannot place trades — every order is placed by you.'],
+  ['h','The one thing you must set up'],
+  ['p','A TwelveData API key. Without it no prices load and nothing works. It is free and takes two minutes — see the API Keys tab.'],
+  ['h','Your first analysis'],
+  ['n',['Open SETTINGS and paste your TwelveData key, then tap SAVE.',
+        'On the SIGNALS page, pick a pair and a timeframe.',
+        'Tap ANALYZE.',
+        'Read the SIGNAL card at the top, then the ANALYSIS card below it for the reasoning.']],
+  ['h','What the numbers mean'],
+  ['t',[['Quality','0-100. How many things line up. Under 60 is weak.'],
+        ['Verdict','TAKE IT, WAIT, or SKIP IT — the app\u2019s summary of everything.'],
+        ['Grade','A/B/C shorthand for the same thing.'],
+        ['R:R','Reward divided by risk. Under 1:1 means the maths is against you.']]],
+  ['w','Nothing here is financial advice. A high score is not a promise. Always decide for yourself.']
+]},
+
+{ id:'keys', t:'API Keys', body:[
+  ['h','TwelveData — required'],
+  ['p','This provides live prices and candles. The free plan gives 800 credits a day, which is plenty.'],
+  ['n',['Open twelvedata.com and sign up with your email.',
+        'Verify your email using the link they send.',
+        'Sign in, open the Dashboard, and find API Keys in the left menu.',
+        'A key is already made for you — copy it.',
+        'In the app: SETTINGS \u2192 Market Data \u2192 paste \u2192 SAVE.']],
+  ['p','The header should now read "API connected".'],
+  ['h','Where your credits go'],
+  ['t',[['One Analyze','1-3 credits, depending on timeframe'],
+        ['One Scan','1 credit per pair in your watchlist'],
+        ['Open trades','1 credit per pair, per refresh'],
+        ['Chart tracking','1 credit per check']]],
+  ['p','The daily cap defaults to 700 so you always keep a buffer below the real 800 limit. Credits reset at 00:00 UTC.'],
+  ['w','The free plan blocks metals such as XAUUSD and some exotic crosses. Those show as "locked". Major pairs always work.'],
+  ['h','Google Gemini — optional'],
+  ['p','Needed only for two features: the plain-language explanation of a signal, and reading chart screenshots. Everything else works without it.'],
+  ['n',['Open aistudio.google.com and sign in with a Google account.',
+        'Tap Get API key, then Create API key.',
+        'Copy it.',
+        'In the app: SETTINGS \u2192 AI Analysis \u2192 paste \u2192 SAVE.',
+        'Tap SHOW MODELS to confirm the key works.']]
+]},
+
+{ id:'signals', t:'Signals', body:[
+  ['h','The main page'],
+  ['p','Pick a pair, pick a timeframe, tap ANALYZE. You get a direction, a quality score, entry, stop loss and take profit, and a written breakdown of every indicator that fed into it.'],
+  ['h','HTF Confluence Filter'],
+  ['p','When on, the app only calls a signal valid if the 4-hour and daily bias agree with it. Fewer signals, better ones. Leave it on unless you are scalping deliberately against the trend.'],
+  ['h','Reading the analysis card'],
+  ['p','Each line is one check: trend structure, Supertrend, RSI, MACD, ADX, where price sits in its recent range, Bollinger position, and whether the stop is wide enough for current volatility. Green means it supports the trade, red means it argues against it.'],
+  ['h','When this is proven wrong'],
+  ['p','At the bottom the app names the exact price that kills the setup. If price closes past it, the idea is dead — leave, do not wait for the stop.'],
+  ['h','ASK THE AI'],
+  ['p','Sends every number to Gemini and gets back a trader\u2019s-eye summary: what it would do, what it would worry about, and the case for the other side. Needs a Gemini key.'],
+  ['h','News warnings'],
+  ['p','A red bar appears when a high-impact release is near. Spreads widen and stops slip around news — either stand aside or widen the stop.']
+]},
+
+{ id:'scan', t:'Scan', body:[
+  ['h','Finding setups across many pairs'],
+  ['p','Scan runs the same engine over your whole watchlist and ranks what it finds, so you do not have to check pairs one by one.'],
+  ['n',['Tap CHANGE to pick your watchlist — up to 12 pairs.',
+        'Choose a minimum strength. 60% is a sensible starting point.',
+        'Tap RUN SCAN.']],
+  ['h','Cost'],
+  ['p','One credit per pair. The app shows the cost before you run it, and warns if your remaining budget is too small.'],
+  ['h','Why results disappear'],
+  ['p','Results clear after five minutes. Prices move, and a stale entry level is worse than none. Re-scan when you come back.'],
+  ['h','Fast vs Deep'],
+  ['p','Deep mode also checks the daily bias, which costs an extra credit per pair but filters out counter-trend noise.']
+]},
+
+{ id:'votes', t:'Votes & Backtest', body:[
+  ['h','The 50 agents'],
+  ['p','Each agent is one technical rule — a moving average cross, an RSI condition, a channel break, and so on. They are not AI. Each votes BUY, SELL or HOLD, and the panel shows the tally.'],
+  ['h','Why the tally matters'],
+  ['p','When the signal card says BUY but the agents say SELL, something is inconsistent. Standing aside on those is usually the better trade.'],
+  ['h','Live record'],
+  ['p','As your analysed signals resolve at their own TP or SL, each agent builds a real win rate. Ignore it until there are a few hundred votes — before that it is noise.'],
+  ['h','Backtest'],
+  ['p','Replays all 50 agents over historical candles for one pair and reports which ones actually worked. One pair costs one credit and produces thousands of samples.'],
+  ['w','A backtest on one pair and one timeframe proves very little. Run three or four before you trust a result. An agent is only genuinely weak if it is weak everywhere.']
+]},
+
+{ id:'market', t:'Market', body:[
+  ['h','Live rates'],
+  ['p','A table of current prices grouped by majors, crosses, metals, indices and crypto. Each group costs one credit per symbol to refresh.'],
+  ['h','Pip calculator'],
+  ['p','Enter a pair and a lot size to see what one pip is worth in dollars. Useful before sizing a trade, especially on gold and indices where the value is not obvious.'],
+  ['h','Minimum lot sizes'],
+  ['t',[['Most pairs','0.01'],['BTCUSD','0.02'],['ETHUSD','0.10']]],
+  ['p','The app clamps the lot box to these automatically. Going below them gets the order rejected by the broker.']
+]},
+
+{ id:'trades', t:'Trades', body:[
+  ['h','Your journal'],
+  ['p','Trades you log here are yours — the app never places anything. Tap "I Took This Trade" on a signal, or "+ Add Manual Trade" for one taken elsewhere.'],
+  ['h','Live P&L'],
+  ['p','Open trades refresh against the live price and show the current profit or loss. TP and SL hits are detected from 5-minute candle highs and lows, so a level touched and reversed still counts.'],
+  ['h','Sizing your stops'],
+  ['t',[['Fixed dollar','The same dollar risk on every pair. Simple, but far too tight on gold.'],
+        ['ATR based','The stop is sized to how much the market actually moves. Wide on gold, tight on EURUSD.']]],
+  ['p','With ATR mode, turn on Auto Lot and your dollar risk stays fixed while the lot size adjusts itself.'],
+  ['h','Per-0.01-lot values'],
+  ['p','TP and SL are set per 0.01 lot. Raising the lot scales the dollar amount automatically — the price distance stays the same.'],
+  ['h','Correlation hedge'],
+  ['p','If a trade goes against you, this suggests pairs that move opposite to it, sized to offset the loss.'],
+  ['w','A hedge freezes a loss, it does not remove it — and you pay spread and swap on both trades. Correlations also break down around news.'],
+  ['h','Honest stats'],
+  ['p','The history card shows your real win rate next to the win rate you would need just to break even, given your average win and loss. If the second number is higher than the first, the system is losing money even if it feels like it is working.']
+]},
+
+{ id:'alerts', t:'Alerts & Chart AI', body:[
+  ['h','Telegram alerts'],
+  ['p','The most reliable way to get alerts, because they arrive even when the app is closed.'],
+  ['n',['In Telegram, search @BotFather and send /newbot.',
+        'Give it any name, then a username ending in "bot".',
+        'Copy the token it replies with.',
+        'Open your new bot and tap Start, then send it any message.',
+        'Paste the token in the app and tap SEND TEST.',
+        'If nothing arrives, message @userinfobot to get your chat ID and paste that too.']],
+  ['w','You must tap Start on your own bot first. Telegram will not let a bot message you until you have spoken to it.'],
+  ['h','Phone notifications'],
+  ['p','Not available in the installed app — a wrapped web app has no access to the phone notification system. Use Telegram instead; it is better anyway.'],
+  ['h','Chart screenshot analysis'],
+  ['n',['Choose a trading style: Scalping, Day or Swing. This changes how wide the stops and targets come back.',
+        'Tap UPLOAD CHART SCREENSHOT and pick an image from your gallery.',
+        'Wait a few seconds for the analysis.']],
+  ['p','You get a direction, entry, stop, two targets, a confidence score, the trend and structure, support and resistance, the reasoning, the level that invalidates it, and the case for the opposite trade.'],
+  ['w','The levels are read from your picture, not from live data. Make sure the price axis and the pair name are both clearly visible. If the levels come back far from the live price the app warns you — that usually means the pair was misread.'],
+  ['h','Live tracking'],
+  ['p','Tap TRACK THIS SETUP and the app watches that one pair, alerting you at the entry zone, the stop and each target. One credit per check.'],
+  ['w','Tracking only runs while the app is open. A phone cannot wake a web app in the background.']
+]},
+
+{ id:'data', t:'Data & Licence', body:[
+  ['h','Where your data lives'],
+  ['p','Entirely on this device. Nothing is uploaded. Nobody else can see your trades, your keys or your history.'],
+  ['h','Back it up'],
+  ['p','ALERTS \u2192 Data & Backup \u2192 EXPORT FILE saves everything as one file: trades, history, settings and keys. IMPORT FILE restores it.'],
+  ['w','Uninstalling the app, or clearing browser data, erases everything permanently. Export a backup regularly \u2014 it is the only copy.'],
+  ['h','Trial and licence'],
+  ['p','Seven days free from first launch. The header counts down. When it ends the app locks, but your trades and history are kept — unlocking brings them all back.'],
+  ['h','Restore code'],
+  ['p','After unlocking you get a 12-character restore code, always visible in the Licence sheet. Use it to move your licence to a new phone. It works on up to three devices.'],
+  ['h','Support'],
+  ['p','ALERTS \u2192 Contact Support. Messages come straight to the developer and the reply appears in the same place, inside the app.']
+]}
+];
+
+let gTab = 'start';
+function renderGuide(){
+  const tabs = $('gTabs'), body = $('gBody');
+  if(!tabs || !body) return;
+  tabs.innerHTML = GUIDE.map(g =>
+    `<button class="chip ${g.id===gTab?'on gold':''}" onclick="gGo('${g.id}')">${g.t}</button>`).join('');
+
+  const sec = GUIDE.find(g => g.id === gTab) || GUIDE[0];
+  body.innerHTML = sec.body.map(([k, v]) => {
+    if(k === 'h') return `<p class="ttl" style="margin:16px 0 8px">${v}</p>`;
+    if(k === 'p') return `<p class="hint" style="margin:0 0 10px">${v}</p>`;
+    if(k === 'n') return `<ol style="margin:0 0 12px;padding-left:20px">` +
+      v.map(x => `<li class="hint" style="margin:0 0 6px">${x}</li>`).join('') + `</ol>`;
+    if(k === 't') return `<div style="border:1px solid var(--line);border-radius:8px;padding:4px 11px;margin:0 0 12px">` +
+      v.map(([a,b]) => `<div class="lbl" style="align-items:flex-start"><span style="flex:0 0 92px">${a}</span><b style="font-weight:600">${b}</b></div>`).join('') + `</div>`;
+    if(k === 'w') return `<div style="border:1px solid var(--gold);background:rgba(255,184,0,.06);border-radius:8px;padding:11px;margin:0 0 12px">
+      <p class="hint" style="color:var(--gold);margin:0">\u26a0 ${v}</p></div>`;
+    return '';
+  }).join('');
+
+  const i = GUIDE.findIndex(g => g.id === gTab);
+  body.innerHTML += `<div class="grid2" style="margin-top:18px">
+    ${i > 0 ? `<button class="btn ghost sm" onclick="gGo('${GUIDE[i-1].id}')">\u2039 ${GUIDE[i-1].t}</button>` : '<span></span>'}
+    ${i < GUIDE.length-1 ? `<button class="btn ghost sm" onclick="gGo('${GUIDE[i+1].id}')">${GUIDE[i+1].t} \u203a</button>` : '<span></span>'}
+  </div>`;
+}
+function gGo(id){
+  gTab = id; renderGuide();
+  const sh = $('guideSheet');
+  if(sh){ const b = sh.querySelector('.sh-b'); if(b) b.scrollTop = 0 }
+}
+
 /* ---------------- backup ---------------- */
 async function fixStorage(){
   const ok = await askPersist();
@@ -5682,7 +5919,10 @@ function choosePick(sym){
   pickVal[pickCtx] = sym;
   closeSheet('pickSheet');
   if(pickCtx === 'main'){
-    S.pair = sym; save(); pickLabel($('selPair'), sym);
+    S.pair = sym;
+    const lv2 = fixLot(sym, S.lots);
+    if(lv2 !== S.lots){ S.lots = lv2; if($('inLots')) $('inLots').value = lv2 }
+    save(); pickLabel($('selPair'), sym);
     setChart(sym); lastSignal = null; renderSignal();
   } else if(pickCtx === 'manual'){
     pickLabel($('mtPair'), sym);
@@ -5773,8 +6013,13 @@ function boot(){
   licRefresh(false);
   loadSupport();
   fillPairs();
-  $('inLots').value = S.lots;
-  $('inLots').onchange = e => { S.lots = +e.target.value||0.01; save() };
+  $('inLots').value = fixLot(S.pair, S.lots);
+  $('inLots').onchange = e => {
+    const m = minLot(S.pair);
+    const v = fixLot(S.pair, e.target.value);
+    if((+e.target.value || 0) < m) toast(`${SPECS[S.pair].n} minimum lot is ${m}`);
+    e.target.value = v; S.lots = v; save();
+  };
 
   $('tfChips').innerHTML = TFS.map(t=>`<button class="chip ${t.id===S.tf?'on gold':''}" data-tf="${t.id}">${t.l}</button>`).join('');
   $('tfChips').onclick = e => {
