@@ -38,9 +38,10 @@ button{cursor:pointer;border:none;background:none;color:inherit}
 
 /* ---------- header ---------- */
 header{
-  position:sticky;top:0;z-index:40;background:var(--bg);
+  position:relative;z-index:1;background:var(--bg);
   padding:calc(7px + env(safe-area-inset-top)) 12px 7px;
 }
+header.hide{display:none}
 .hbox{max-width:600px;margin:0 auto;text-align:center;padding:5px 10px 7px;
   background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
 .hbox h1{margin:0;font-size:15px;color:var(--gold);letter-spacing:2.2px;font-weight:700;line-height:1.2}
@@ -65,6 +66,8 @@ header{
 
 /* ---------- layout ---------- */
 main{padding:0 12px 20px;max-width:600px;margin:0 auto}
+/* pages without the header need their own top inset */
+main > section:not(#pgSignals){padding-top:calc(12px + env(safe-area-inset-top))}
 .card{background:var(--panel);border:2px solid var(--line);border-radius:var(--r);
   padding:14px;margin-bottom:14px}
 .ttl{font-size:13px;letter-spacing:2px;text-transform:uppercase;
@@ -1175,7 +1178,7 @@ header{border-bottom:2px solid var(--gold)}
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '8.6.1';
+const VERSION = '8.6.2';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -1789,6 +1792,9 @@ function closeSheet(id){ $(id).classList.remove('on') }
 document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('on') }));
 function go(pg,btn){
   ['Signals','Scan','Votes','Market','Trades','Alerts'].forEach(p=>$('pg'+p).classList.toggle('hide',p!==pg));
+  /* The header belongs to the Signals page. Other pages get the full screen,
+     and their own title card already says where you are. */
+  document.querySelector('header').classList.toggle('hide', pg !== 'Signals');
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b===btn));
   window.scrollTo(0,0);
   if(pg==='Scan') renderScan();
