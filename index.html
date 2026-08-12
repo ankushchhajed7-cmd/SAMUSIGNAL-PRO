@@ -1490,7 +1490,7 @@ body,body.lux{--dn:#FF4D57}
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '9.1.0';
+const VERSION = '9.1.1';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -1712,12 +1712,27 @@ async function askPersist(){
     return await navigator.storage.persist();
   }catch(e){ return false }
 }
+/* Is the app running inside a native wrapper (TWA/WebView) rather than a
+   browser tab? Declared here because storageInfo() below reads it, and a
+   `const` touched before its own line throws rather than reading undefined. */
+const WRAPPED = /median|gonative|wv\)|; wv/i.test(navigator.userAgent) ||
+                (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches
+                 && !('Notification' in window));
+
 async function storageInfo(){
   try{
-    const p = navigator.storage && navigator.storage.persisted ? await navigator.storage.persisted() : false;
-    const e = navigator.storage && navigator.storage.estimate ? await navigator.storage.estimate() : {};
-    return {p, used: e.usage || 0, quota: e.quota || 0};
-  }catch(err){ return {p:false, used:0, quota:0} }
+    let p = navigator.storage && navigator.storage.persisted
+      ? await navigator.storage.persisted() : false;
+    /* An installed Android app keeps its data until the user uninstalls it
+       or clears app data — the browser eviction the Storage API guards
+       against does not apply. navigator.storage.persist() usually returns
+       false inside a WebView anyway, so reporting "unprotected" there was
+       both alarming and untrue. */
+    if(!p && WRAPPED) p = true;
+    const e = navigator.storage && navigator.storage.estimate
+      ? await navigator.storage.estimate() : {};
+    return {p, used: e.usage || 0, quota: e.quota || 0, native: WRAPPED};
+  }catch(err){ return {p:WRAPPED, used:0, quota:0, native:WRAPPED} }
 }
 
 function renderStorage(){
@@ -1725,7 +1740,10 @@ function renderStorage(){
   storageInfo().then(si => {
     const mb = si.used ? (si.used/1048576).toFixed(1) : '0';
     el.innerHTML =
-      `<b style="color:${si.p?'var(--up)':'var(--gold)'}">${si.p ? '\u2713 Your data is protected' : '\u26a0 Browser may clear this data'}</b>` +
+      `<b style="color:${si.p?'var(--up)':'var(--gold)'}">${
+        si.native ? '\u2713 Protected \u2014 installed app'
+        : si.p ? '\u2713 Your data is protected'
+        : '\u26a0 Browser may clear this data'}</b>` +
       `<br>Using ${mb} MB on this device` +
       `<br>Trades: ${S.open.length} open \u00b7 ${S.hist.length} closed`;
   });
@@ -2039,12 +2057,6 @@ function shareAiWa(){
 }
 
 /* ---------- notifications ---------- */
-/* A wrapped app (TWA/WebView) has no web Notification API. Saying
-   "this browser does not support notifications" is confusing there, so
-   point the user at Telegram, which works even when the app is closed. */
-const WRAPPED = /median|gonative|wv\)|; wv/i.test(navigator.userAgent) ||
-                (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches
-                 && !('Notification' in window));
 function noNotif(){
   return !('Notification' in window) || typeof Notification.requestPermission !== 'function';
 }
@@ -6127,11 +6139,21 @@ function gGo(id){
 
 /* ---------------- backup ---------------- */
 async function fixStorage(){
+  if(WRAPPED){
+    renderStorage();
+    alert('✓ Already protected.\n\nThis is the installed app, so your data stays '
+        + 'until you uninstall it or clear the app data in Android settings. '
+        + 'There is nothing to switch on.\n\nStill export a backup file now and then '
+        + '— it is the only copy that survives a reinstall.');
+    return;
+  }
   const ok = await askPersist();
   renderStorage();
   alert(ok
-    ? '✓ Done — your browser will not auto-delete this app\'s data.'
-    : 'The browser declined for now.\n\nTo improve your chances:\n• Install the app to your home screen\n• Use it regularly for a few days\n\nUntil then, export a backup file often — that keeps your data safe.');
+    ? '✓ Done — this browser will not auto-delete the app\'s data.'
+    : 'The browser decides this on its own and said no for now.\n\nIt usually says yes once you:\n'
+    + '• Install the app to your home screen\n• Use it regularly for a few days\n\n'
+    + 'Nothing is wrong — your data is still saved. Export a backup file and you are covered either way.');
 }
 function doBackup(){
   const data = {app:'SamuSignal Pro', v:3, at:new Date().toISOString(), state:S};
