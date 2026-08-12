@@ -834,6 +834,39 @@ nav button.on i{opacity:1}
   animation:none !important; filter:none !important;
 }
 .shine.up{color:var(--up)} .shine.dn{color:var(--dn)} .shine.gd{color:var(--gold)}
+
+/* ---- bold edges ----
+   Same dark palette, thicker line. At 1px the border read as a hairline
+   and boxes blurred into the page; 2px gives each surface a definite
+   edge without going back to the bright gold that shouted on every card.
+   The colour is lifted a little too, because a 2px line at #18251F is
+   still nearly invisible on a black background. */
+:root, body.lux, body.t-emerald, body.t-royal, body.t-navy{
+  --line:#4E7064;
+}
+.card,.sheet,.lockCard{border:2px solid var(--line) !important}
+.btn,.chip,input,select,textarea,.pick,.ib,.tick,.ic,
+.lvl,.pb,.vc,.st,.ptot,.tag,.prow{border:2px solid var(--line) !important}
+.sw .tg{border:2px solid var(--line)}
+header{border-bottom:2px solid var(--line) !important}
+nav{border-top:2px solid var(--line) !important}
+.sh-h{border-bottom:2px solid var(--line) !important}
+.hist{border-bottom:2px solid var(--line) !important}
+.hist:last-child{border-bottom:0 !important}
+th{border-bottom:2px solid var(--line) !important}
+
+/* meaning still overrides the neutral edge */
+.btn.gold{border-color:var(--gold) !important}
+.btn.g{border-color:var(--up) !important}
+.btn.r{border-color:rgba(255,77,87,.45) !important}
+.btn.ghost{border-color:rgba(22,226,126,.42) !important}
+.chip.on,.chip.on.gold{border-color:var(--gold) !important}
+.lvl.sl{border-color:rgba(255,77,87,.4) !important}
+.lvl.tp{border-color:rgba(22,226,126,.4) !important}
+.sw.on .tg{border-color:var(--gold)}
+.ic.w{border-color:rgba(22,226,126,.4) !important}
+#licBadge{border-color:rgba(232,181,75,.45) !important}
+input:focus,select:focus,textarea:focus{border-color:var(--gold) !important}
 </style>
 </head>
 <body class="lux t-emerald">
@@ -1404,7 +1437,7 @@ nav button.on i{opacity:1}
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '9.0.0';
+const VERSION = '9.0.1';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
