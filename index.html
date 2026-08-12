@@ -1181,7 +1181,7 @@ body,body.lux{--dn:#FF4D57}
   <div class="card">
     <p class="ttl">Data &amp; Backup</p>
     <p class="hint" id="storeInfo" style="margin:0 0 12px">—</p>
-    <button class="btn gold sm" style="margin-bottom:14px" onclick="fixStorage()">🔒 PROTECT MY DATA</button>
+    <button class="btn gold sm" id="btnProtect" style="margin-bottom:14px" onclick="fixStorage()">🔒 PROTECT MY DATA</button>
     <p class="ttl" style="margin:14px 0 8px">Backup File</p>
     <div class="grid2">
       <button class="btn ghost sm" onclick="doBackup()">⬇ EXPORT FILE</button>
@@ -1300,6 +1300,7 @@ body,body.lux{--dn:#FF4D57}
 <div class="ov" id="guideSheet"><div class="sheet">
   <div class="sh-h"><h3>How To Use</h3><button class="x" onclick="closeSheet('guideSheet')">✕</button></div>
   <div class="sh-b">
+    <div class="chips" id="gLangs" style="margin-bottom:11px"></div>
     <div class="chips" id="gTabs" style="margin-bottom:14px"></div>
     <div id="gBody"></div>
   </div>
@@ -1490,7 +1491,7 @@ body,body.lux{--dn:#FF4D57}
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '9.1.1';
+const VERSION = '9.2.0';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -6105,14 +6106,180 @@ const GUIDE = [
 ]}
 ];
 
+
+/* Hinglish edition of the guide. Same section ids and block types, so the
+   renderer needs no special cases — only the array it reads changes. */
+const GUIDE_HI = [
+{ id:'start', t:'Shuruaat', body:[
+  ['h','Ye app hai kya'],
+  ['p','SamuSignal Pro market ko 50 rule-based agents aur classic indicators se padhta hai, phir batata hai ki usko kya dikh raha hai aur kitna bharosa hai. Ye analysis aur journal ka tool hai. Ye tumhare broker se juda hua nahi hai aur khud koi order nahi lagata \u2014 har trade tum khud lagate ho.'],
+  ['h','Ek cheez zaroori hai'],
+  ['p','TwelveData ki API key. Uske bina koi price nahi aayegi aur kuch kaam nahi karega. Free hai, do minute lagte hain \u2014 API Keys tab dekho.'],
+  ['h','Pehla analysis'],
+  ['n',['SETTINGS kholo, TwelveData key paste karo, SAVE dabao.',
+        'SIGNALS page pe pair aur timeframe chuno.',
+        'ANALYZE dabao.',
+        'Upar SIGNAL card padho, phir neeche ANALYSIS card me poori wajah.']],
+  ['h','Numbers ka matlab'],
+  ['t',[['Quality','0-100. Kitni cheezein match kar rahi hain. 60 se neeche kamzor.'],
+        ['Verdict','TAKE IT, WAIT ya SKIP IT \u2014 sab milakar app ka faisla.'],
+        ['Grade','A/B/C \u2014 wahi baat chhote roop me.'],
+        ['R:R','Reward bata risk. 1:1 se kam matlab ganit tumhare khilaaf hai.']]],
+  ['w','Yahan kuch bhi financial advice nahi hai. Zyada score ka matlab pakka munafa nahi. Faisla hamesha khud lo.']
+]},
+
+{ id:'keys', t:'API Keys', body:[
+  ['h','TwelveData \u2014 zaroori'],
+  ['p','Isse live price aur candles aate hain. Free plan roz 800 credits deta hai, jo kaafi hai.'],
+  ['n',['twelvedata.com kholo aur email se sign up karo.',
+        'Email verify karo (link aayega).',
+        'Login karke Dashboard kholo, left menu me API Keys dhundo.',
+        'Ek key pehle se bani hui hogi \u2014 copy karo.',
+        'App me: SETTINGS \u2192 Market Data \u2192 paste \u2192 SAVE.']],
+  ['p','Header me ab "API connected" dikhna chahiye.'],
+  ['h','Credits kahan kharch hote hain'],
+  ['t',[['Ek Analyze','1-3 credits, timeframe ke hisaab se'],
+        ['Ek Scan','watchlist ke har pair ka 1 credit'],
+        ['Open trades','har pair ka 1 credit, har refresh pe'],
+        ['Chart tracking','har check ka 1 credit']]],
+  ['p','Daily cap 700 rakha hai taaki asli 800 ki limit se pehle buffer bacha rahe. Credits 00:00 UTC pe reset hote hain.'],
+  ['w','Free plan pe metals (XAUUSD) aur kuch exotic pairs band hote hain \u2014 wo "locked" dikhenge. Major pairs hamesha chalte hain.'],
+  ['h','Google Gemini \u2014 marzi se'],
+  ['p','Sirf do feature ke liye: signal ko aasan bhasha me samjhana, aur chart screenshot padhna. Baaki sab iske bina chalta hai.'],
+  ['n',['aistudio.google.com kholo, Google account se sign in karo.',
+        'Get API key dabao, phir Create API key.',
+        'Key copy karo.',
+        'App me: SETTINGS \u2192 AI Analysis \u2192 paste \u2192 SAVE.',
+        'SHOW MODELS dabakar check karo ki key chal rahi hai.']]
+]},
+
+{ id:'signals', t:'Signals', body:[
+  ['h','Main page'],
+  ['p','Pair chuno, timeframe chuno, ANALYZE dabao. Direction, quality score, entry, stop loss, take profit \u2014 aur har indicator ki likhi hui wajah milegi.'],
+  ['h','HTF Confluence Filter'],
+  ['p','On rehne pe app signal tabhi valid maanta hai jab 4-hour aur daily bias bhi wahi bol rahe hon. Signal kam aayenge, par behtar. Jaanbujh kar counter-trend scalp na kar rahe ho to on hi rakho.'],
+  ['h','Analysis card kaise padhein'],
+  ['p','Har line ek check hai: trend structure, Supertrend, RSI, MACD, ADX, price apni recent range me kahan hai, Bollinger position, aur stop volatility ke hisaab se kaafi door hai ya nahi. Hara matlab trade ke paksh me, laal matlab khilaaf.'],
+  ['h','Kab galat saabit hoga'],
+  ['p','Neeche app wo exact price batata hai jo setup ko khatam kar deti hai. Us se aage close ho jaye to idea mar gaya \u2014 nikal jao, stop ka intezaar mat karo.'],
+  ['h','ASK THE AI'],
+  ['p','Saare numbers Gemini ko bhejta hai aur ek trader jaisa summary laata hai: wo kya karta, kis baat ki chinta hoti, aur doosri taraf ka case kya hai. Gemini key chahiye.'],
+  ['h','News warning'],
+  ['p','High-impact release paas ho to laal patti aati hai. News ke waqt spread chaudi hoti hai aur stop slip hoti hai \u2014 ya to ruk jao, ya stop chaudi rakho.']
+]},
+
+{ id:'scan', t:'Scan', body:[
+  ['h','Kai pairs me setup dhundhna'],
+  ['p','Scan wahi engine poori watchlist pe chalata hai aur best result upar rakhta hai, taaki ek-ek pair check na karna pade.'],
+  ['n',['CHANGE dabakar watchlist chuno \u2014 zyada se zyada 12 pairs.',
+        'Minimum strength chuno. 60% se shuru karna theek rehta hai.',
+        'RUN SCAN dabao.']],
+  ['h','Kitna kharcha'],
+  ['p','Har pair ka 1 credit. Chalane se pehle app kharcha dikha deta hai, aur budget kam ho to warning bhi.'],
+  ['h','Result kyun hat jaate hain'],
+  ['p','Paanch minute me clear ho jaate hain. Price chalta rehta hai, aur purana entry level na hone se bura hota hai. Wapas aao to dobara scan karo.'],
+  ['h','Fast vs Deep'],
+  ['p','Deep mode daily bias bhi check karta hai \u2014 har pair ka ek extra credit lagta hai, par counter-trend kachra chhant jaata hai.']
+]},
+
+{ id:'votes', t:'Votes & Backtest', body:[
+  ['h','50 agents'],
+  ['p','Har agent ek technical rule hai \u2014 moving average cross, RSI condition, channel break waghera. Ye AI nahi hain. Har ek BUY, SELL ya HOLD vote deta hai, aur panel ginti dikhata hai.'],
+  ['h','Ginti kyun maayne rakhti hai'],
+  ['p','Jab signal card BUY bole aur agents SELL, to kuch mel nahi kha raha. Aise me ruk jaana aksar behtar trade hota hai.'],
+  ['h','Live record'],
+  ['p','Jaise-jaise tumhare analyse kiye signal apne TP/SL pe khatam hote hain, har agent ka asli win rate banta hai. Kuch sau votes tak isko nazarandaz karo \u2014 usse pehle ye sirf shor hai.'],
+  ['h','Backtest'],
+  ['p','Purane candles pe 50 agents chalata hai aur batata hai kaunsa sach me kaam kiya. Ek pair ka ek credit, aur hazaron samples.'],
+  ['w','Ek pair aur ek timeframe ka backtest bahut kam saabit karta hai. Bharosa karne se pehle teen-chaar pair pe chalao. Agent tabhi sach me kamzor hai jab har jagah kamzor ho.']
+]},
+
+{ id:'market', t:'Market', body:[
+  ['h','Live rates'],
+  ['p','Majors, crosses, metals, indices aur crypto ke current price, group me bante hue. Har group ke har symbol ka 1 credit lagta hai.'],
+  ['h','Pip calculator'],
+  ['p','Pair aur lot size daalo, ek pip ki dollar value dikh jayegi. Trade size karne se pehle kaam ka \u2014 khaaskar gold aur indices pe, jahan value saaf nahi hoti.'],
+  ['h','Minimum lot size'],
+  ['t',[['Zyadatar pairs','0.01'],['BTCUSD','0.02'],['ETHUSD','0.10']]],
+  ['p','App lot box ko khud in pe clamp kar deta hai. Isse neeche jaoge to broker order reject kar dega.']
+]},
+
+{ id:'trades', t:'Trades', body:[
+  ['h','Tumhara journal'],
+  ['p','Yahan jo trade record karte ho wo tumhare hain \u2014 app khud kuch nahi lagata. Signal pe "I Took This Trade" dabao, ya kahin aur liya ho to "+ Add Manual Trade".'],
+  ['h','Live P&L'],
+  ['p','Open trades live price se refresh hote hain aur abhi ka munafa/nuksan dikhate hain. TP aur SL hit 5-minute candle ke high/low se pakde jaate hain, isliye level chhu kar palat jaye tab bhi count hota hai.'],
+  ['h','Stop kaise size karein'],
+  ['t',[['Fixed dollar','Har pair pe same dollar risk. Simple, par gold pe bahut patli.'],
+        ['ATR based','Stop market ki asli chaal ke hisaab se. Gold pe chaudi, EURUSD pe patli.']]],
+  ['p','ATR mode me Auto Lot on karoge to dollar risk fix rahega aur lot size khud adjust hoga.'],
+  ['h','0.01 lot ke hisaab se'],
+  ['p','TP aur SL 0.01 lot ke hisaab se set hote hain. Lot badhaoge to dollar apne aap badhega \u2014 price distance wahi rahegi.'],
+  ['h','Correlation hedge'],
+  ['p','Trade ulta ja raha ho to ye ulta chalne wale pairs suggest karta hai, sahi lot size ke saath.'],
+  ['w','Hedge se loss rukta hai, khatam nahi hota \u2014 aur dono trades ka spread aur swap lagta hai. News ke waqt correlation toot bhi jaati hai.'],
+  ['h','Imaandar stats'],
+  ['p','History card tumhara asli win rate dikhata hai, aur uske bagal me wo win rate jo sirf barabar rehne ke liye chahiye. Doosra number pehle se bada ho, to system paisa kha raha hai \u2014 chahe lage ki chal raha hai.']
+]},
+
+{ id:'alerts', t:'Alerts & Chart AI', body:[
+  ['h','Telegram alerts'],
+  ['p','Sabse bharosemand tareeka, kyunki app band hone pe bhi aate hain.'],
+  ['n',['Telegram me @BotFather search karo aur /newbot bhejo.',
+        'Koi bhi naam do, phir username jo "bot" pe khatam ho.',
+        'Jo token mile, copy karo.',
+        'Apna naya bot kholo, Start dabao, koi bhi message bhejo.',
+        'Token app me paste karo aur SEND TEST dabao.',
+        'Kuch na aaye to @userinfobot se chat ID lo aur wo bhi paste karo.']],
+  ['w','Apne bot pe pehle Start dabana zaroori hai. Telegram bot ko tab tak message nahi bhejne deta jab tak tum usse baat na karo.'],
+  ['h','Phone notifications'],
+  ['p','Installed app me nahi milte \u2014 wrapped web app ko phone ke notification system ka access nahi hota. Telegram use karo, wo waise bhi behtar hai.'],
+  ['h','Chart screenshot analysis'],
+  ['n',['Trading style chuno: Scalping, Day ya Swing. Isse stop aur target ki chaudai badalti hai.',
+        'UPLOAD CHART SCREENSHOT dabao aur gallery se image chuno.',
+        'Kuch second ruko.']],
+  ['p','Milega: direction, entry, stop, do target, confidence score, trend aur structure, support/resistance, wajah, invalidation level, aur ulti taraf ka case.'],
+  ['w','Levels tumhari tasveer se padhe jaate hain, live data se nahi. Screenshot me price axis aur pair ka naam dono saaf dikhne chahiye. Levels live price se bahut door aayein to app warning deti hai \u2014 matlab pair galat padha gaya.'],
+  ['h','Live tracking'],
+  ['p','TRACK THIS SETUP dabao aur app us ek pair ko dekhta rahega, entry zone, stop aur har target pe alert dega. Har check ka 1 credit.'],
+  ['w','Tracking sirf app khuli hone pe chalti hai. Phone background me web app ko jaga nahi sakta.']
+]},
+
+{ id:'data', t:'Data & Licence', body:[
+  ['h','Data kahan rehta hai'],
+  ['p','Poora is device pe. Kahin upload nahi hota. Tumhare trades, keys aur history koi aur nahi dekh sakta.'],
+  ['h','Backup lete raho'],
+  ['p','ALERTS \u2192 Data & Backup \u2192 EXPORT FILE sab kuch ek file me save kar deta hai: trades, history, settings aur keys. IMPORT FILE se wapas aa jaata hai.'],
+  ['w','App uninstall karne se, ya browser data clear karne se, sab hamesha ke liye mit jaata hai. Backup regular lete raho \u2014 wahi ek copy bachti hai.'],
+  ['h','Trial aur licence'],
+  ['p','Pehli baar kholne se 7 din free. Header me din ginti karta rehta hai. Khatam hone pe app lock ho jaati hai, par trades aur history bach jaati hain \u2014 unlock karte hi sab wapas.'],
+  ['h','Restore code'],
+  ['p','Unlock ke baad 12 akshar ka restore code milta hai, jo Licence sheet me hamesha dikhta hai. Naye phone pe licence le jaane ke liye use karo. 3 device tak chalta hai.'],
+  ['h','Support'],
+  ['p','ALERTS \u2192 Contact Support. Message seedha developer ko jaata hai aur jawab usi jagah app ke andar aata hai.']
+]}
+];
+
+/* Which edition is on screen. Kept in the same store as everything else so
+   the choice survives a restart. */
+let gLang = LS.get('gLang','en');
+function gSetLang(l){ gLang = l; LS.set('gLang', l); renderGuide() }
+function guideData(){ return gLang === 'hi' ? GUIDE_HI : GUIDE }
+
 let gTab = 'start';
 function renderGuide(){
   const tabs = $('gTabs'), body = $('gBody');
   if(!tabs || !body) return;
-  tabs.innerHTML = GUIDE.map(g =>
+  const langs = $('gLangs');
+  if(langs) langs.innerHTML =
+    `<button class="chip ${gLang==='en'?'on gold':''}" onclick="gSetLang('en')">English</button>` +
+    `<button class="chip ${gLang==='hi'?'on gold':''}" onclick="gSetLang('hi')">हिंदी</button>`;
+
+  tabs.innerHTML = guideData().map(g =>
     `<button class="chip ${g.id===gTab?'on gold':''}" onclick="gGo('${g.id}')">${g.t}</button>`).join('');
 
-  const sec = GUIDE.find(g => g.id === gTab) || GUIDE[0];
+  const G = guideData();
+  const sec = G.find(g => g.id === gTab) || G[0];
   body.innerHTML = sec.body.map(([k, v]) => {
     if(k === 'h') return `<p class="ttl" style="margin:16px 0 8px">${v}</p>`;
     if(k === 'p') return `<p class="hint" style="margin:0 0 10px">${v}</p>`;
@@ -6125,7 +6292,7 @@ function renderGuide(){
     return '';
   }).join('');
 
-  const i = GUIDE.findIndex(g => g.id === gTab);
+  const i = G.findIndex(g => g.id === gTab);
   body.innerHTML += `<div class="grid2" style="margin-top:18px">
     ${i > 0 ? `<button class="btn ghost sm" onclick="gGo('${GUIDE[i-1].id}')">\u2039 ${GUIDE[i-1].t}</button>` : '<span></span>'}
     ${i < GUIDE.length-1 ? `<button class="btn ghost sm" onclick="gGo('${GUIDE[i+1].id}')">${GUIDE[i+1].t} \u203a</button>` : '<span></span>'}
@@ -6438,6 +6605,14 @@ function boot(){
   $('scanDeep').onchange = e => { S.scanDeep = e.target.value === '1'; save(); renderScan() };
   renderScan();
   $('swNotif').classList.toggle('on', S.notif && !noNotif() && Notification.permission==='granted');
+
+  /* Storage protection only means something in a browser tab, where the
+     engine may evict site data. An installed app keeps its data until it
+     is uninstalled, so the button has nothing to do there. */
+  if(WRAPPED){
+    const bp = $('btnProtect');
+    if(bp) bp.remove();
+  }
   if(noNotif()){
     /* Do not leave a dead switch on screen — explain and point elsewhere. */
     S.notif = false;
