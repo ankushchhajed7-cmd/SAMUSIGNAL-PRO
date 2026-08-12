@@ -867,6 +867,59 @@ th{border-bottom:2px solid var(--line) !important}
 .ic.w{border-color:rgba(22,226,126,.4) !important}
 #licBadge{border-color:rgba(232,181,75,.45) !important}
 input:focus,select:focus,textarea:focus{border-color:var(--gold) !important}
+
+/* ---- trade action row ----
+   The skin's .btn.sm (two classes) outranked .acts button (one class,
+   one type), so these five buttons inherited the larger padding and
+   font and pushed Close outside the card. Give the row its own grid
+   that wraps, and raise the specificity so it wins outright. */
+.acts{
+  display:grid !important;
+  grid-template-columns:repeat(auto-fit,minmax(56px,1fr));
+  gap:6px; margin-top:11px;
+}
+.acts > button.btn,
+.acts > button.btn.sm{
+  padding:9px 4px !important; font-size:10.5px !important; font-weight:700 !important;
+  border-radius:8px !important; min-width:0; width:auto;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+/* ---- borders matched to each theme ----
+   A neutral grey edge sat outside the palette and read as a seam rather
+   than part of the design. Each theme now carries a border drawn from
+   its own accent hue, desaturated and darkened until it clears roughly
+   3:1 against that theme's card — visible as an edge, quiet as a colour.
+   Royal and navy needed lifting further; at the first values tried they
+   measured near 2:1 and would have looked unfinished next to the rest. */
+:root, body:not(.lux){
+  --gold:#16E27E; --up:#16E27E; --acc:#16E27E;
+  --line:#2F7A55;
+  --panel:#0B1310; --panel2:#0F1A16; --bg:#050807;
+}
+body.lux.t-emerald{
+  --gold:#3FC9AB; --up:#3FC9AB; --acc:#3FC9AB;
+  --line:#2A7566;
+  --panel:#08201C; --panel2:#051512; --bg:#03100e;
+}
+body.lux:not(.t-emerald):not(.t-royal):not(.t-navy){
+  --gold:#E8B54B; --up:#16E27E; --acc:#E8B54B;
+  --line:#7A5F22;
+  --panel:#141009; --panel2:#0d0a05; --bg:#0a0704;
+}
+body.lux.t-royal{
+  --gold:#C274EE; --up:#16E27E; --acc:#C274EE;
+  --line:#7A4E9E;
+  --panel:#1a0a26; --panel2:#0f0518; --bg:#0d0413;
+}
+body.lux.t-navy{
+  --gold:#5B9BE8; --up:#16E27E; --acc:#5B9BE8;
+  --line:#3E6BA4;
+  --panel:#06152f; --panel2:#040e22; --bg:#020a1c;
+}
+/* gains and losses never change with the theme */
+body,body.lux{--dn:#FF4D57}
+.up{color:var(--up)} .dn{color:var(--dn)}
 </style>
 </head>
 <body class="lux t-emerald">
@@ -1437,7 +1490,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold) !important}
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '9.0.1';
+const VERSION = '9.1.0';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
