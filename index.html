@@ -943,6 +943,33 @@ body,body.lux{--dn:#FF4D57}
 @media (prefers-reduced-motion:reduce){
   .verdictbar{animation:none; box-shadow:0 0 16px 2px var(--vdGlow)}
 }
+
+/* ---- scan found nothing ----
+   Previously this read as small grey text and looked like the scan had
+   not run at all. A scan that clears nothing is a real answer, so it is
+   presented with the same weight as a hit, and pulses twice on arrival
+   so the outcome is noticed. Amber, not red: nothing has gone wrong. */
+@keyframes noHitPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(232,181,75,.45)}
+  50%    {box-shadow:0 0 26px 4px rgba(232,181,75,.45)}
+}
+.card.noHit{
+  border-color:var(--amber,#E8B54B) !important; border-width:2px !important;
+  background:rgba(232,181,75,.05);
+  animation:noHitPulse 1.25s ease-in-out 3;
+}
+.noHitTop{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:10px}
+.noHitTop b{
+  font-size:19px; font-weight:800; letter-spacing:1.5px; color:#E8B54B;
+}
+.noHitTop span{margin-left:auto; font-size:11.5px; font-weight:600; color:var(--mut)}
+.noHitWhy{
+  margin:0 0 14px; font-size:13.5px; line-height:1.6; color:var(--txt); font-weight:500;
+}
+.noHitDo{display:grid; gap:8px}
+@media (prefers-reduced-motion:reduce){
+  .card.noHit{animation:none; box-shadow:0 0 18px 2px rgba(232,181,75,.4)}
+}
 </style>
 </head>
 <body class="lux t-emerald">
@@ -1514,7 +1541,7 @@ body,body.lux{--dn:#FF4D57}
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '9.3.0';
+const VERSION = '9.3.1';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -3058,6 +3085,25 @@ function renderSignal(){
 /* ================= SETUP SCANNER ================= */
 function scanCost(){ return S.watch.length * (S.scanDeep ? 4 : 2) }
 
+/* Dropping the bar by one step is what most people do next, so offer it
+   as a button rather than making them find the dropdown. Steps through the
+   values the dropdown actually offers — a computed number could land
+   between options and leave the select showing nothing. */
+const SCAN_STEPS = [80, 70, 60, 0];
+function nextScanMin(cur){
+  const i = SCAN_STEPS.indexOf(+cur);
+  if(i === -1) return 60;                       /* unknown value: sane default */
+  return SCAN_STEPS[Math.min(i + 1, SCAN_STEPS.length - 1)];
+}
+function scanLower(){
+  const nv = nextScanMin(S.scanMin);
+  if(nv === S.scanMin){ toast('Already showing everything'); return }
+  S.scanMin = nv;
+  $('scanMin').value = String(nv);
+  save();
+  runScan();
+}
+
 function renderScan(){
   const n = S.watch.length, c = scanCost();
   $('wCount').textContent = `(${n} pairs)`;
@@ -3070,7 +3116,7 @@ function renderScan(){
     (c > left ? '<br><span style="color:var(--dn)">Not enough budget — shorten the watchlist or switch to Fast mode.</span>' : '');
   if(scanFresh()){
     const left = Math.ceil((SCAN_TTL - (Date.now()-S.scan.at))/1000);
-    $('scanT').innerHTML = `<span style="color:${left<60?'var(--dn)':'var(--gold)'}">${Math.floor(left/60)}:${String(left%60).padStart(2,'0')} baaki</span>`;
+    $('scanT').innerHTML = `<span style="color:${left<60?'var(--dn)':'var(--gold)'}">${Math.floor(left/60)}:${String(left%60).padStart(2,'0')} left</span>`;
   } else $('scanT').textContent = '—';
   drawScanRows();
 }
@@ -3095,8 +3141,24 @@ function drawScanRows(){
     return;
   }
   if(!rows.length){
-    $('scanOut').innerHTML = `<div class="card"><div class="empty"><div>😐</div>Scanned ${all} pairs, but nothing cleared ${S.scanMin}%.<br><br>
-      <span style="font-size:11px">The market is unclear right now. Lower the threshold or scan again later.</span></div></div>`;
+    $('scanOut').innerHTML = `
+      <div class="card noHit">
+        <div class="noHitTop">
+          <b>NOTHING FOUND</b>
+          <span>${all} pairs scanned · ${S.scanMin}% needed</span>
+        </div>
+        <p class="noHitWhy">Not one setup cleared your threshold. The market has no
+        clear direction right now — which is itself useful to know.</p>
+        <div class="noHitDo">
+          ${nextScanMin(S.scanMin) !== S.scanMin
+            ? `<button class="btn ghost sm" onclick="scanLower()">${
+                nextScanMin(S.scanMin) === 0
+                  ? 'Show everything and scan again'
+                  : `Lower to ${nextScanMin(S.scanMin)}% and scan again`}</button>`
+            : ''}
+          <button class="btn sm" onclick="go('Signals', document.querySelector('nav button[data-pg=\'Signals\']'))">Analyze one pair instead</button>
+        </div>
+      </div>`;
     return;
   }
   $('scanOut').innerHTML = rows.map(r => {
