@@ -920,6 +920,29 @@ body.lux.t-navy{
 /* gains and losses never change with the theme */
 body,body.lux{--dn:#FF4D57}
 .up{color:var(--up)} .dn{color:var(--dn)}
+
+/* ---- verdict bar ----
+   This is the one line that answers "should I take this?", so it gets a
+   pulse the moment it appears. The pulse runs six times and stops: a
+   permanently flashing element is tiring to sit next to, and anything
+   that never stops soon stops being noticed. Reduced-motion users get a
+   static glow instead. */
+@keyframes vdPulse{
+  0%,100%{box-shadow:0 0 0 0 var(--vdGlow); transform:scale(1)}
+  50%    {box-shadow:0 0 22px 3px var(--vdGlow); transform:scale(1.015)}
+}
+.verdictbar{
+  position:relative; border-width:2px !important; border-radius:12px;
+  animation:vdPulse 1.15s ease-in-out 6;
+  will-change:box-shadow, transform;
+}
+.verdictbar.vd-go   {--vdGlow:rgba(22,226,126,.55)}
+.verdictbar.vd-wait {--vdGlow:rgba(232,181,75,.55)}
+.verdictbar.vd-no   {--vdGlow:rgba(255,77,87,.55)}
+.verdictbar b{font-size:15px; font-weight:800; letter-spacing:1.2px}
+@media (prefers-reduced-motion:reduce){
+  .verdictbar{animation:none; box-shadow:0 0 16px 2px var(--vdGlow)}
+}
 </style>
 </head>
 <body class="lux t-emerald">
@@ -1491,7 +1514,7 @@ body,body.lux{--dn:#FF4D57}
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '9.2.0';
+const VERSION = '9.3.0';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -2948,7 +2971,7 @@ function finalCall(s){
     why: R.slice(0,3).join(' · ') + ' — wait a while and analyze again'};
   if(warn === 1) return {t:'WAIT', c:'var(--gold)', bg:'rgba(255,184,0,.08)',
     why: R[0] + ' — everything else is fine, take it in smaller size if you want'};
-  return {t:'LE LO', c:'var(--up)', bg:'rgba(0,255,150,.08)',
+  return {t:'TAKE IT', c:'var(--up)', bg:'rgba(0,255,150,.08)',
     why: `Quality ${s.q}%${lastAn?`, technicals ${lastAn.pct}%`:''}${lastVotes&&lastVotes.sym===s.sym?`, ${Math.max(lastVotes.buy,lastVotes.sell)}/50 agents agree`:''} — everything is in favour`};
 }
 
@@ -3002,7 +3025,7 @@ function renderSignal(){
         <div class="lvl tp"><span>TP · $${s.tpD}</span><b class="mono">${fmt(s.sym,s.tp)}</b><small style="display:block;font-size:10.5px;color:var(--mut);font-weight:600">${s.tpPips} pips</small></div>
       </div>
       ${(() => { const f = finalCall(s); return `
-      <div class="verdictbar" style="border-color:${f.c};background:${f.bg}">
+      <div class="verdictbar vd-${f.c==='var(--up)'?'go':f.c==='var(--dn)'?'no':'wait'}" style="border-color:${f.c};background:${f.bg}">
         <b class="shine ${f.c==='var(--up)'?'up':f.c==='var(--dn)'?'dn':'gd'}">${f.t}</b>
         <p style="color:${f.c}">${f.why}</p>
       </div>`; })()}
