@@ -112,6 +112,8 @@ const PIECES = [
   ['deviceFp',      /function deviceFp\([\s\S]*?\n\}/],
   ['matchSymbol',   /function matchSymbol\([\s\S]*?\n\}/],
   ['entryZone',     /function entryZone\([\s\S]*?\n\}/],
+  ['getPrice',      /async function getPrice\([\s\S]*?\n\}/],
+  ['trackNextIn',   /function trackNextIn\([\s\S]*?\n\}/],
   ['STYLES',        /const STYLES = \{[\s\S]*?\n\};/],
   ['SCAN_STEPS',    /const SCAN_STEPS = [^\n]+/],
   ['nextScanMin',   /function nextScanMin\([\s\S]*?\n\}/],
@@ -198,7 +200,8 @@ const EXPORTS = [
   'structCorr','pearson','jsonRescue','P_UP','P_DN','P_HI','paint','esc',
   'LIC','licActive','trialLeftMs','trialDaysLeft','licOk','licReady','deviceFp',
   'matchSymbol','entryZone','STYLES','SCAN_STEPS','nextScanMin','GUIDE','GUIDE_HI',
-  'PREVIEW_LOCK'
+  'PREVIEW_LOCK',
+  'getPrice','trackNextIn'
 ];
 try {
   const glue = EXPORTS.map(n =>
@@ -714,6 +717,89 @@ ok('har section ka title hai',
 ok('sirf jaane-pehchane block type',
    [...GUIDE, ...GUIDE_HI].every(g => g.body.every(([k]) => ['h','p','n','t','w'].includes(k))));
 
+/* ============ Q2. price fail hone par chup nahi rehna ============ */
+G('Q2. Silent-fail nahi hona chahiye');
+
+/* Ye group us bug ke liye hai jisme getPrice() har error nigal jaata tha
+   aur purana cached price laut deta tha. Tracking ko lagta tha check
+   safal hua, "abhi check hua" dikhta rehta tha, aur price frozen. */
+globalThis.prices['XAU/USD'] = {p: 3300};
+
+/* td() ko nakli banate hain taaki fail karwa saken */
+let tdMode = 'ok';
+globalThis.td = async () => {
+  if (tdMode === 'fail') throw new Error('Network fail');
+  if (tdMode === 'junk') return { price: 'abc' };
+  return { price: '3310' };
+};
+globalThis.apiSym = x => x;
+
+const priceProbe = (async () => {
+  tdMode = 'ok';
+  const p1 = await getPrice('XAU/USD', true);
+  ok('sahi jawab pe naya price milta hai', p1 === 3310, 'mila ' + p1);
+
+  tdMode = 'fail';
+  let threw = false, msg = '';
+  try { await getPrice('XAU/USD', true) } catch(e){ threw = true; msg = e.message }
+  ok('strict mode me error phenkta hai', threw, 'chup-chaap nikal gaya');
+  ok('error ka message bhi aata hai', msg.length > 0, msg);
+
+  const cached = await getPrice('XAU/USD');
+  ok('bina strict ke purana behaviour waisa hi', cached === 3310, 'mila ' + cached);
+
+  tdMode = 'junk';
+  let threw2 = false;
+  try { await getPrice('XAU/USD', true) } catch(e){ threw2 = true }
+  ok('kachra price bhi strict me error deta hai', threw2);
+
+  tdMode = 'ok';
+})();
+
+/* report tabhi chhapo jab async check bhi ho jayein */
+priceProbe.then(runRest).catch(e => {
+  console.error('❌ price test hi crash ho gaya: ' + e.message);
+  process.exit(1);
+});
+
+function runRest(){
+
+ok('trackCheck strict mode use karta hai',
+   /getPrice\(t\.sym,\s*true\)/.test(html),
+   'strict ke bina wahi bug wapas aa jayega');
+ok('fail hone par wajah save hoti hai',
+   /t\.why\s*=\s*\(e && e\.message\)/.test(html));
+ok('catch ab khaali nahi hai',
+   !/a failed price check is not worth interrupting/.test(html));
+ok('safal check purani wajah mita deta hai',
+   /t\.why\s*=\s*''/.test(html));
+ok('skip hone ki wajah bhi record hoti hai',
+   /function trackSkip\(/.test(html));
+ok('API key na ho to batata hai', /No API key/.test(html));
+ok('daily budget aur per-minute alag-alag bataye jaate hain',
+   /Daily API budget used up/.test(html) && /8-calls-per-minute/.test(html));
+ok('price na hilne par note dikhta hai', /sameCount/.test(html));
+ok('UI me fail ka box hai', /CHECK DID NOT RUN/.test(html));
+ok('purana price "live nahi hai" likha jaata hai',
+   /it is not live/.test(html));
+
+/* countdown */
+resetState();
+S.trackMin = 5;
+const nowT = Date.now();
+ok('abhi tak check nahi hua to "now"',
+   trackNextIn({lastAt:0, done:false}) === 'now');
+ok('done tracker pe countdown nahi',
+   trackNextIn({lastAt:nowT, done:true}) === '\u2014');
+ok('samay ho gaya to "due now"',
+   trackNextIn({lastAt: nowT - 6*60000, done:false}) === 'due now');
+ok('bacha hua samay m:ss me dikhta hai',
+   /^\d+:\d\d$/.test(trackNextIn({lastAt: nowT - 60000, done:false})),
+   trackNextIn({lastAt: nowT - 60000, done:false}));
+ok('interval 30s se ghata kar 20s hua', /\}, 20000\);/.test(html));
+ok('app wapas khulte hi check hota hai',
+   /visibilitychange[\s\S]{0,160}trackCheck\(false\)/.test(html));
+
 /* ============ U. pura signal, shuru se aakhir tak ============ */
 G('U. Pura signal end-to-end');
 resetState();
@@ -771,6 +857,10 @@ ok('UI me Hinglish nahi bacha', hinLines.length === 0,
 ok('Hinglish guide jaan-boojh kar hai', guideStart > 0 && guideEnd > guideStart);
 
 /* ============ report ============ */
+  report();
+} /* runRest */
+
+function report(){
 const total = pass + fail;
 console.log('\n' + '─'.repeat(46));
 if (fail === 0) {
@@ -783,3 +873,4 @@ if (fail === 0) {
 }
 console.log('─'.repeat(46));
 process.exit(fail === 0 ? 0 : 1);
+}

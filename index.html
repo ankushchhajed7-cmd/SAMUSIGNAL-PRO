@@ -1541,7 +1541,7 @@ body,body.lux{--dn:#FF4D57}
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '9.3.1';
+const VERSION = '9.4.0';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -2417,12 +2417,18 @@ async function getQuotes(syms, note, ttl){
   return out;
 }
 
-async function getPrice(sym){
+/* strict = true: throw on failure instead of quietly handing back the last
+   cached price. Callers that only want "a price, any price" (tickers, the
+   pip table) keep the old forgiving behaviour by omitting the flag. */
+async function getPrice(sym, strict){
   try{
     const j = await td(`/price?symbol=${encodeURIComponent(apiSym(sym))}`, 1, sym);
     const p = +j.price;
     if(isFinite(p) && p>0){ prices[sym] = Object.assign(prices[sym]||{}, {p}); return p }
-  }catch(e){}
+    if(strict) throw new Error('No price returned for ' + SPECS[sym].n);
+  }catch(e){
+    if(strict) throw e;
+  }
   return prices[sym] ? prices[sym].p : null;
 }
 
@@ -5531,19 +5537,47 @@ function entryZone(sym, entry, sl){
 }
 
 let trackBusy = false;
+/* Record why a check could not run, so the card can say so rather than
+   looking like it simply is not working. */
+function trackSkip(reason){
+  const t = S.track;
+  if(!t) return;
+  t.why = reason; t.whyAt = Date.now();
+  save();
+  if(!$('pgAlerts').classList.contains('hide')) renderTrack();
+}
+
 async function trackCheck(force){
   const t = S.track;
   if(!t || t.done || trackBusy) return;
-  if(!S.key) return;
+  if(!S.key){ trackSkip('No API key — add one in Settings'); return }
   const gap = Math.max(2, +S.trackMin || 5) * 60000;
   if(!force && Date.now() - t.lastAt < gap) return;
-  if(!force && creditsLeft() < 3) return;
+  /* Two different limits, two different messages. creditsLeft() is the
+     rolling per-minute allowance; dayLeft() is the daily budget. Saying
+     "out for today" when it is really a 60-second wait would send people
+     off to check their plan for no reason. */
+  if(dayLeft() <= 0){
+    trackSkip('Daily API budget used up — it resets at 00:00 UTC');
+    return;
+  }
+  if(!force && creditsLeft() < 3){
+    trackSkip('Hit the 8-calls-per-minute limit — retrying shortly');
+    return;
+  }
 
   trackBusy = true;
   try{
-    const p = await getPrice(t.sym);
-    if(!isFinite(p) || !p) return;
+    /* strict: a failed call must not masquerade as an unchanged price */
+    const p = await getPrice(t.sym, true);
+    if(!isFinite(p) || !p) throw new Error('No usable price for ' + SPECS[t.sym].n);
+
+    /* A price that never moves is either a quiet pair or a closed market.
+       Worth saying, because it looks identical to a broken tracker. */
+    t.sameCount = (t.last === p) ? (t.sameCount || 0) + 1 : 0;
+
     t.last = p; t.lastAt = Date.now();
+    t.why = ''; t.whyAt = 0;          /* a good check clears the last failure */
 
     const up = t.dir === 'BUY';
     const N = SPECS[t.sym].n;
@@ -5586,14 +5620,38 @@ async function trackCheck(force){
     save();
     if(!$('pgAlerts').classList.contains('hide')) renderTrack();
   }catch(e){
-    /* a failed price check is not worth interrupting the user for */
+    /* Not worth a popup, but it must be visible on the card — a silent
+       failure is indistinguishable from a frozen market. */
+    t.why = (e && e.message) ? e.message : 'Price check failed';
+    t.whyAt = Date.now();
+    save();
+    if(!$('pgAlerts').classList.contains('hide')) renderTrack();
   }finally{ trackBusy = false }
 }
 
 setInterval(() => {
   if(document.hidden) return;
   trackCheck(false);
-}, 30000);
+  /* keep the countdown ticking even when no check is due */
+  if(S.track && !$('pgAlerts').classList.contains('hide')) renderTrack();
+}, 20000);
+
+/* Coming back to the app is exactly when a fresh price matters most. */
+document.addEventListener('visibilitychange', () => {
+  if(!document.hidden && S.track && !S.track.done) trackCheck(false);
+});
+
+/* How long until the next check is due. Shown live so a quiet tracker
+   still looks like it is doing something. */
+function trackNextIn(t){
+  if(!t || t.done) return '\u2014';
+  if(!t.lastAt) return 'now';
+  const gap = Math.max(2, +S.trackMin || 5) * 60000;
+  const left = Math.ceil((t.lastAt + gap - Date.now()) / 1000);
+  if(left <= 0) return 'due now';
+  const m = Math.floor(left / 60), ss = String(left % 60).padStart(2, '0');
+  return m + ':' + ss;
+}
 
 function renderTrack(){
   const box = $('trackBox'), st = $('trackState');
@@ -5635,6 +5693,19 @@ function renderTrack(){
     }</b></div>
     ${pl !== null ? `<div class="lbl"><span>Move since entry level</span><b class="mono ${pl>=0?'up':'dn'}">${pl>=0?'+':''}${pl.toFixed(1)} pips</b></div>` : ''}
     <div class="lbl"><span>Last checked</span><b class="mono">${t.lastAt ? ago(t.lastAt) : 'not yet'}</b></div>
+    <div class="lbl"><span>Next check</span><b class="mono">${trackNextIn(t)}</b></div>
+
+    ${t.why ? `<div style="border:2px solid var(--dn);background:rgba(255,77,87,.09);
+      border-radius:10px;padding:11px;margin:11px 0">
+      <b style="color:var(--dn);font-size:10.5px;letter-spacing:1.2px">\u26a0 CHECK DID NOT RUN</b>
+      <p class="hint" style="color:#FF9DA3;margin:5px 0 0">${esc(t.why)}</p>
+      <p class="hint" style="color:#FF9DA3;margin:3px 0 0">Last tried ${ago(t.whyAt)}. The
+      price below is the last one that did arrive \u2014 it is not live.</p></div>` : ''}
+
+    ${(!t.why && (t.sameCount || 0) >= 3) ? `<div style="border:2px solid var(--amber,#E8B54B);
+      background:rgba(232,181,75,.07);border-radius:10px;padding:11px;margin:11px 0">
+      <p class="hint" style="color:var(--amber,#E8B54B);margin:0">Price has not moved for
+      ${t.sameCount} checks. The market may be closed, or this pair is very quiet.</p></div>` : ''}
 
     <div style="margin:10px 0 4px">
       ${row('entry','Entry zone', fmt(t.sym,t.entry), '\ud83d\udd14')}
@@ -6023,7 +6094,12 @@ async function loadSupport(){
           <b style="color:var(--up);font-size:10.5px;letter-spacing:1.2px">↩ REPLY</b>
           <p class="hint" style="margin:4px 0 0">${esc(m.reply)}</p></div>` : ''}
       </div>`).join('') : '';
-  }catch(e){}
+  }catch(e){
+    /* Someone waiting on a reply needs to know the list did not load,
+       otherwise an empty panel reads as "no reply yet". */
+    el.innerHTML = `<p class="hint" style="color:var(--dn)">Could not load your messages \u2014
+      check your connection and reopen this page.</p>`;
+  }
 }
 function esc(t){ return String(t || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])) }
 
