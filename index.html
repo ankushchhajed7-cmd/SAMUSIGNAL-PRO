@@ -1248,7 +1248,7 @@ body,body.lux{--dn:#FF4D57}
 <nav>
   <button class="on" data-pg="Signals" onclick="go('Signals',this)"><i>📡</i>SIGNALS</button>
   <button data-pg="Scan" onclick="go('Scan',this)"><i>🎯</i>SCAN</button>
-  <button data-pg="Votes" onclick="go('Votes',this)"><i>🗳</i>VOTES</button>
+  <button data-pg="Votes" onclick="go('Votes',this)"><i>🧠</i>AGENTS</button>
   <button data-pg="Market" onclick="go('Market',this)"><i>📊</i>MARKET</button>
   <button data-pg="Trades" onclick="go('Trades',this)"><i>💼</i>TRADES</button>
   <button data-pg="Alerts" onclick="go('Alerts',this)"><i>🔔</i>ALERTS</button>
@@ -1541,7 +1541,7 @@ body,body.lux{--dn:#FF4D57}
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '9.4.0';
+const VERSION = '9.5.0';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -3418,12 +3418,18 @@ function gradeStats(){
     .map(([k,v]) => ({grade:k, n:v.n, wr:Math.round(v.w/v.n*100), pl:v.pl, avgQ:Math.round(v.q/v.n)}));
 }
 
+/* Below this many scored signals a win rate is noise, not evidence.
+   Twenty is the point where one extra win or loss stops swinging the
+   figure by more than a few points. */
+const MIN_SAMPLES = 20;
+
 function renderSigHist(){
   const all = S.sigs;
   const done = all.filter(g => g.out==='TP' || g.out==='SL');
   const open = all.filter(g => g.out==='OPEN').length;
-  const wr = done.length ? Math.round(done.filter(g=>g.out==='TP').length/done.length*100) : 0;
-  const pl = done.reduce((a,g)=>a+g.pl,0);
+  const won = done.filter(g => g.out === 'TP').length;
+  const lost = done.length - won;
+  const wr = done.length ? Math.round(won / done.length * 100) : 0;
 
   $('sigT').textContent = all.length ? `${all.length} signals` : '—';
   if(!all.length){
@@ -3435,17 +3441,22 @@ function renderSigHist(){
     <div class="perf">
       <div class="pb"><b>${done.length}</b><span>SCORED</span><em>${open} running</em></div>
       <div class="pb"><b class="${wr>=50?'up':'dn'}">${wr}%</b><span>ACCURACY</span></div>
-      <div class="pb"><b class="${pl>=0?'up':'dn'}" style="font-size:15px">${money(pl)}</b><span>THEORETICAL</span></div>
+      <div class="pb"><b class="${won>=lost?'up':'dn'}">${won}<span style="color:var(--mut);font-weight:400"> / </span>${lost}</b><span>WIN / LOSS</span></div>
     </div>
-    ${gs.length ? `<p class="ttl" style="margin:16px 0 8px">Grade Wise</p>
-    <table><thead><tr><th>Grade</th><th style="text-align:right">Signals</th><th style="text-align:right">Accuracy</th><th style="text-align:right">Avg Q</th></tr></thead>
+    ${gs.length ? `<p class="ttl" style="margin:16px 0 8px">By Grade</p>
+    <table><thead><tr><th>Grade</th><th style="text-align:right">Scored</th><th style="text-align:right">Accuracy</th><th style="text-align:right">Avg Q</th></tr></thead>
     <tbody>${gs.map(g => `<tr>
-      <td class="mono"><b style="color:${g.wr>=60?'var(--up)':g.wr>=40?'var(--gold)':'var(--dn)'}">${g.grade}</b></td>
+      <td class="mono"><b style="color:${
+        g.n < MIN_SAMPLES ? 'var(--mut)'
+        : g.wr>=60 ? 'var(--up)' : g.wr>=40 ? 'var(--gold)' : 'var(--dn)'}">${g.grade}</b></td>
       <td class="mono" style="text-align:right">${g.n}</td>
-      <td class="mono ${g.wr>=50?'up':'dn'}" style="text-align:right">${g.wr}%</td>
+      <td class="mono ${g.n < MIN_SAMPLES ? 'mu' : (g.wr>=50?'up':'dn')}" style="text-align:right">${
+        g.n < MIN_SAMPLES ? `<span style="font-size:11px">need ${MIN_SAMPLES - g.n} more</span>` : g.wr + '%'}</td>
       <td class="mono mu" style="text-align:right">${g.avgQ}%</td>
     </tr>`).join('')}</tbody></table>
-    <p class="hint">These are not real trades — every analyzed signal scores itself against its own SL/TP. It shows you which grades actually work.</p>` : ''}
+    <p class="hint">Not real trades — every analyzed signal scores itself against its own
+    stop and target. A grade's accuracy stays hidden until ${MIN_SAMPLES} signals have
+    scored, because a handful of results says nothing either way.</p>` : ''}
     <p class="ttl" style="margin:16px 0 8px">Recent</p>
     ${all.slice(0,25).map(g => {
       const ic = g.out==='TP'?'w':g.out==='SL'?'l':'m';

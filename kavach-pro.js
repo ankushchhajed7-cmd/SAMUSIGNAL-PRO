@@ -113,6 +113,7 @@ const PIECES = [
   ['matchSymbol',   /function matchSymbol\([\s\S]*?\n\}/],
   ['entryZone',     /function entryZone\([\s\S]*?\n\}/],
   ['getPrice',      /async function getPrice\([\s\S]*?\n\}/],
+  ['MIN_SAMPLES',   /const MIN_SAMPLES = [^\n]+/],
   ['trackNextIn',   /function trackNextIn\([\s\S]*?\n\}/],
   ['STYLES',        /const STYLES = \{[\s\S]*?\n\};/],
   ['SCAN_STEPS',    /const SCAN_STEPS = [^\n]+/],
@@ -201,7 +202,7 @@ const EXPORTS = [
   'LIC','licActive','trialLeftMs','trialDaysLeft','licOk','licReady','deviceFp',
   'matchSymbol','entryZone','STYLES','SCAN_STEPS','nextScanMin','GUIDE','GUIDE_HI',
   'PREVIEW_LOCK',
-  'getPrice','trackNextIn'
+  'getPrice','trackNextIn','MIN_SAMPLES'
 ];
 try {
   const glue = EXPORTS.map(n =>
@@ -799,6 +800,34 @@ ok('bacha hua samay m:ss me dikhta hai',
 ok('interval 30s se ghata kar 20s hua', /\}, 20000\);/.test(html));
 ok('app wapas khulte hi check hota hai',
    /visibilitychange[\s\S]{0,160}trackCheck\(false\)/.test(html));
+
+/* ============ T2. Play Store ke liye saaf-safai ============ */
+G('T2. Play Store safety');
+
+/* Google financial-services policy performance claims pe sakht hai, aur
+   kam samples pe accuracy dikhana user ko galat faisle pe le jaata hai. */
+ok('koi dollar "theoretical" figure nahi',
+   !/THEORETICAL/.test(html),
+   'performance claim jaisa dikhta hai');
+ok('uski jagah win/loss ginti hai', /WIN \/ LOSS/.test(html));
+eq('kam se kam 20 samples chahiye', MIN_SAMPLES, 20);
+ok('kam samples pe accuracy chhupti hai',
+   /g\.n < MIN_SAMPLES \? `<span[^`]*need \$\{MIN_SAMPLES - g\.n\} more/.test(html));
+ok('kam samples pe rang bhi neutral',
+   /g\.n < MIN_SAMPLES \? 'var\(--mut\)'/.test(html));
+ok('hint me wajah bhi likhi hai',
+   /a handful of results says nothing either way/.test(html));
+ok('tab ka naam AGENTS hai, VOTES nahi',
+   /AGENTS<\/button>/.test(html) && !/>VOTES</.test(html));
+ok('"not real trades" wali warning bachi hai',
+   /Not real trades/.test(html));
+
+/* sample threshold ka vyavhaar */
+const showAcc = n => n >= MIN_SAMPLES;
+ok('9 samples pe accuracy chhupi', showAcc(9) === false);
+ok('19 samples pe abhi bhi chhupi', showAcc(19) === false);
+ok('20 samples pe dikhne lagti hai', showAcc(20) === true);
+ok('100 samples pe dikhti hai', showAcc(100) === true);
 
 /* ============ U. pura signal, shuru se aakhir tak ============ */
 G('U. Pura signal end-to-end');
