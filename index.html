@@ -1265,13 +1265,20 @@ body,body.lux{--dn:#FF4D57}
       <p class="hint" style="margin:0">Your trades and history are safe on this device. Unlock to keep analyzing.</p>
     </div>
 
+    <div class="lockBox hide" id="lockUsed" style="border-color:var(--amber,#E8B54B)">
+      <p class="hint" style="margin:0;color:var(--amber,#E8B54B)">The free trial runs once per
+      device. Reinstalling does not start a new one.</p>
+      <p class="hint" style="margin:6px 0 0">If you have never used this app before, tap
+      Contact Support with the device id below and it will be sorted out.</p>
+    </div>
+
     <div id="lockPlay" class="hide">
-      <div class="priceTag"><b>₹7,999</b><span>one-time · lifetime access</span></div>
+      <div class="priceTag"><b id="priceA">—</b><span>one-time · lifetime access</span></div>
       <button class="btn gold" onclick="buyViaPlay()">UNLOCK — PAY WITH GOOGLE PLAY</button>
     </div>
 
     <div id="lockDirect" class="hide">
-      <div class="priceTag"><b>₹7,999</b><span>one-time · lifetime access</span></div>
+      <div class="priceTag"><b id="priceB">—</b><span>one-time · lifetime access</span></div>
       <div class="qrBox"><img id="qrImg" src="./pay-qr.png" alt="Payment QR"
         onerror="this.style.display='none';document.getElementById('qrMiss').style.display='block'"></div>
       <p id="qrMiss" class="hint" style="display:none;color:var(--gold)">Payment QR not found. Add <b>pay-qr.png</b> to the app folder.</p>
@@ -1541,7 +1548,7 @@ body,body.lux{--dn:#FF4D57}
 /* ==================================================================
    SamuSignal Pro
    ================================================================== */
-const VERSION = '9.5.0';
+const VERSION = '9.6.0';
 const $ = id => document.getElementById(id);
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('samu_'+k); return v===null?d:JSON.parse(v);}catch(e){return d} },
@@ -5760,7 +5767,7 @@ const LIC = {
   mode: CFGF.mode || 'direct',
   sku:  CFGF.sku  || 'samusignal_pro_lifetime',
   trialDays: CFGF.trialDays || 7,
-  price: CFGF.price || '\u20b97,999'
+  price: CFGF.price || '\u20b94,999'
 };
 
 const LICS = {
@@ -5783,13 +5790,47 @@ function deviceCode(){
 }
 
 /* a weak fingerprint, recorded so the admin can spot obvious trial resets */
+/* Only signals that survive a reinstall go in here. Anything stored by the
+   app itself would defeat the purpose. The canvas render adds real entropy
+   because GPU and font rasterisation differ measurably between devices. */
+function fpCanvas(){
+  try{
+    const cv = document.createElement('canvas');
+    cv.width = 200; cv.height = 40;
+    const g = cv.getContext('2d');
+    g.textBaseline = 'top';
+    g.font = '14px Arial';
+    g.fillStyle = '#f60'; g.fillRect(0, 0, 100, 20);
+    g.fillStyle = '#069'; g.fillText('SamuSignal \u2713 \u20b9', 2, 4);
+    g.fillStyle = 'rgba(102,204,0,.7)'; g.fillText('SamuSignal \u2713 \u20b9', 4, 10);
+    return cv.toDataURL().slice(-96);
+  }catch(e){ return 'nocanvas' }
+}
+
 function deviceFp(){
-  const bits = [screen.width, screen.height, screen.colorDepth,
-                navigator.platform || '', navigator.language || '',
-                new Date().getTimezoneOffset()].join('|');
-  let h = 0;
-  for(let i = 0; i < bits.length; i++){ h = ((h << 5) - h + bits.charCodeAt(i)) | 0 }
-  return Math.abs(h).toString(36);
+  const n = navigator;
+  let tz = '';
+  try{ tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '' }catch(e){}
+  const bits = [
+    screen.width, screen.height, screen.colorDepth,
+    window.devicePixelRatio || 1,
+    n.platform || '', n.language || '',
+    (n.languages || []).join(','),
+    n.hardwareConcurrency || 0,
+    n.deviceMemory || 0,
+    n.maxTouchPoints || 0,
+    new Date().getTimezoneOffset(), tz,
+    fpCanvas()
+  ].join('|');
+  /* FNV-1a, 64 bits across two words — the old 32-bit hash collided far too
+     easily for something that decides who gets a free trial. */
+  let h1 = 0x811c9dc5, h2 = 0x01000193;
+  for(let i = 0; i < bits.length; i++){
+    const c = bits.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 0x01000193);
+    h2 = Math.imul(h2 ^ c, 0x85ebca6b);
+  }
+  return (h1 >>> 0).toString(36) + (h2 >>> 0).toString(36);
 }
 
 function licReady(){ return LIC.db && !/PASTE_YOUR/.test(LIC.db) }
@@ -5829,17 +5870,39 @@ async function licRefresh(loud){
     licPaint(); return;
   }
   const code = deviceCode();
+  const fp = deviceFp();
   try{
     let rec = await licGet('devices/' + code);
     if(!rec){
-      rec = {
-        createdAt: Date.now(),
-        trialEnds: Date.now() + LIC.trialDays * 86400000,
-        status: 'trial',
-        fp: deviceFp(),
-        v: VERSION
-      };
-      await licPut('devices/' + code, rec);
+      /* Has this phone already had its trial under a different code?
+         The ledger is keyed on the fingerprint, which survives a reinstall. */
+      let used = null;
+      try{ used = await licGet('fingerprints/' + fp) }catch(e){}
+
+      if(used && used.trialAt){
+        /* No second trial. The device record is still created so the person
+           has an id to quote to support, and so an activation can be applied
+           to it later. */
+        rec = {
+          createdAt: Date.now(),
+          trialEnds: used.trialAt,     /* already in the past */
+          status: 'used',
+          fp, v: VERSION, prior: used.code || ''
+        };
+        await licPut('devices/' + code, rec).catch(()=>{});
+      }else{
+        rec = {
+          createdAt: Date.now(),
+          trialEnds: Date.now() + LIC.trialDays * 86400000,
+          status: 'trial',
+          fp, v: VERSION
+        };
+        await licPut('devices/' + code, rec);
+        /* Claim the fingerprint. Write-once: the rules refuse an overwrite,
+           so a second attempt cannot reset it. */
+        await licPut('fingerprints/' + fp,
+                     {trialAt: Date.now(), code}).catch(()=>{});
+      }
     }
     LICS.state = rec;
     LICS.seen = Date.now();
@@ -5906,6 +5969,8 @@ function licPaint(){
     wrap.classList.add('on');
     badge.style.display = 'none';
     $('lockDev').textContent = deviceCode();
+    /* one source of truth for the price, so config.js is the only place to edit */
+    ['priceA','priceB'].forEach(id => { const el = $(id); if(el) el.textContent = LIC.price });
     const pend = st.status === 'pending';
     $('lockPending').classList.toggle('hide', !pend);
     $('lockPlay').classList.toggle('hide', pend || LIC.mode !== 'play');
@@ -5913,7 +5978,11 @@ function licPaint(){
     $('lockSub').textContent = PREVIEW_LOCK
       ? 'PREVIEW — this is what a customer sees'
       : (pend ? 'Payment received — awaiting activation'
-              : 'Your free trial has ended');
+        : st.status === 'used' ? 'This device has already used its free trial'
+        : 'Your free trial has ended');
+
+    const un = $('lockUsed');
+    if(un) un.classList.toggle('hide', st.status !== 'used' || PREVIEW_LOCK);
     const ex = $('exitPrev');
     if(ex) ex.classList.toggle('hide', !PREVIEW_LOCK);
   }
@@ -6010,7 +6079,8 @@ async function buyViaPlay(){
     if(!details.length){ toast('Product not found — try again later'); return }
     const req = new PaymentRequest(
       [{supportedMethods:'https://play.google.com/billing', data:{sku: LIC.sku}}],
-      {total:{label:'SamuSignal Pro — lifetime', amount:{currency:'INR', value:'7999'}}}
+      {total:{label:'SamuSignal Pro — lifetime',
+               amount:{currency:'INR', value:String(LIC.price).replace(/[^\d]/g,'')}}}
     );
     const resp = await req.show();
     const token = resp.details && resp.details.token;
