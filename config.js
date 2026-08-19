@@ -10,11 +10,10 @@ window.SAMU_CONFIG = {
   /* Firebase Realtime Database URL.
      Firebase console > Realtime Database, the link shown at the top.
      Example: https://samusignal-pro-default-rtdb.asia-southeast1.firebasedatabase.app */
-  db: '',
+  db: 'https://samusignal-pro-default-rtdb.asia-southeast1.firebasedatabase.app',
 
-  /* Firebase Web API key — used by the admin page only.
-     Firebase console > Project settings > General > Your apps > Config.
-     Example: AIzaSyD................................ */
+  /* Not needed here. The admin console asks for this on its own Connect
+     screen and stores it on that device, so the app never carries it. */
   apiKey: '',
 
   /* 'direct' = UPI QR + you activate manually  (APK build, 0% fee)
